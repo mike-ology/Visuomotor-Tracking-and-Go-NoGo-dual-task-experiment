@@ -14,24 +14,26 @@ default_formatted_text = true;
 
 begin;
 
+$disc_size = 150;
+
 array {
 		ellipse_graphic {
-			ellipse_height = 200;
-			ellipse_width = 200;
+			ellipse_height = $disc_size;
+			ellipse_width = $disc_size;
 			color = 255, 255, 255;
-			background_color = 255, 0, 0, 128;
+			background_color = 255, 0, 0, 0;
 		}disc1;
 		ellipse_graphic {
-			ellipse_height = 200;
-			ellipse_width = 200;
-			color = 255, 255, 255;
-			background_color = 255, 0, 0, 128;
+			ellipse_height = $disc_size;
+			ellipse_width = $disc_size;
+			color = 255, 255, 255, 0;
+			background_color = 255, 0, 0, 0;
 		}disc2;
 		ellipse_graphic {
-			ellipse_height = 200;
-			ellipse_width = 200;
-			color = 255, 255, 255;
-			background_color = 255, 0, 0, 128;
+			ellipse_height = $disc_size;
+			ellipse_width = $disc_size;
+			color = 255, 255, 255, 0;
+			background_color = 255, 0, 0, 0;
 		}disc3;
 }disc_array;
 
@@ -116,37 +118,47 @@ mse.set_restricted( 2, true );
 mse.set_pos( 1, 0 ); 
 mse.set_pos( 2, 0 );
 
-int speed_x = 5;
-int speed_y = 5;
 
 array <double> array_closest_noncolliding_x [3][0];
 array <double> array_closest_noncolliding_y [3][0];
 
 array <string> array_edge_collision [3];
 
-array <double> array_starting_coordinates [8][2] = { { -350.0, 350.0 }, { 350.0, 350.0 }, { -350.0, 0.0 }, { 350.0, 0.0 }, { -350.0, -350.0 }, { -0.0, -350.0 }, { 350.0, -350.0 } };
-array_starting_coordinates.shuffle();
+array <double> array_starting_coordinates [7][2] = { { -350.0, 350.0 }, { 350.0, 350.0 }, { -350.0, 0.0 }, { 350.0, 0.0 }, { -350.0, -350.0 }, { -0.0, -350.0 }, { 350.0, -350.0 } };
 
-array <double> array_starting_jitter [10] = { 0.0, 5.0, 10.0, 15.0, 20.0, 25.0, 30.0, 35.0, 40.0, 45.0 };
-array_starting_jitter.shuffle();
+array <bool> array_disc_collision[4][2];
+array <int> array_edges_aligned[3][4];
+
+double last_mse_x = 0;
+double last_ms_y = 0;
+
+int baseline_tracking_speed = 5;
+int baseline_tracking_level = 29;
+int current_tracking_level = baseline_tracking_level;
+
+double speed_x = baseline_tracking_speed;
+double speed_y = baseline_tracking_speed;
+
+double tracking_target_min_accuracy = 77.5;
+double tracking_target_max_accuracy = 82.5;
+
+array <double> tracking_staircase_percentages [49] = {
+10.87,15.22,19.57,23.91,28.26,32.61,36.96,41.30,45.65,50.00,54.35,58.70,63.04,67.39,71.74,76.09,
+80.43,84.78,89.13,90.22,91.30,92.39,93.48,94.57,95.65,96.74,97.83,98.91,100.00,101.09,102.17,
+103.26,104.35,105.43,106.52,107.61,108.70,109.78,110.87,111.96,113.04,114.13,115.22,116.30,
+117.39,118.48,119.57,120.65,121.74 };
 
 array <double> array_disc_current_xy [4][2] = { { 0.0, 350.0 }, { 0.0, 0.0 }, { 0.0, 0.0 }, { 0.0, 0.0 } };
 array <double> array_disc_check_xy [4][2] = { { 0.0, 0.0 }, { 0.0, 0.0 }, { 0.0, 0.0 }, { 0.0, 0.0 } };
 array <double> array_disc_next_xy [4][2] = { { 0.0, 0.0 }, { 0.0, 0.0 }, { 0.0, 0.0 }, { 0.0, 0.0 } };
 array <double> array_disc_speed_xy [4][2];
-array <bool> array_disc_collision[4][2];
 
 loop int i = 1 until i > 3 begin
 	array_disc_speed_xy[i][1] = speed_x;
 	array_disc_speed_xy[i][2] = speed_y;
 	i = i + 1;
 end;
-
-array <int> array_edges_aligned[3][4];
-
-double last_mse_x = 0;
-double last_ms_y = 0;
-
+array <double> array_starting_jitter [10] = { 0.0, 5.0, 10.0, 15.0, 20.0, 25.0, 30.0, 35.0, 40.0, 45.0 };
 
 ################
 
@@ -167,8 +179,14 @@ begin
 	int frame_count = 0;
 	int frames_inside_disc = 0;
 	int frames_outside_disc = 0;
+	double tracking_accuracy;
+
 
 	# Set secondary disc starting coordinates
+	array_starting_coordinates.shuffle();
+	array_starting_jitter.shuffle();
+	array_disc_current_xy[1][1] = 0.0;
+	array_disc_current_xy[1][2] = 350.0;
 	array_disc_current_xy[2][1] = array_starting_coordinates[2][1] + array_starting_jitter[3];
 	array_disc_current_xy[2][2] = array_starting_coordinates[2][2] + array_starting_jitter[4];
 	array_disc_current_xy[3][1] = array_starting_coordinates[3][1] + array_starting_jitter[5];
@@ -192,14 +210,14 @@ begin
 		elseif trial_state == "GO FRAME" then
 			# set disc spped to starting speed
 			loop int i = 1 until i > 3 begin
-				array_disc_speed_xy[i][1] = speed_x;
-				array_disc_speed_xy[i][2] = speed_y;
+				array_disc_speed_xy[i][1] = speed_x * (tracking_staircase_percentages[current_tracking_level]/100);
+				array_disc_speed_xy[i][2] = speed_y * (tracking_staircase_percentages[current_tracking_level]/100);
 				i = i + 1;
 			end;
 			trial_state = "COUNTDOWN";
 			trial_initiated_time = clock.time_double();
 			trial_start_time = trial_initiated_time + 5000.0;
-			trial_end_time = trial_start_time + 60000.0;
+			trial_end_time = trial_start_time + 20000.0;
 		elseif trial_state == "COUNTDOWN" then
 			double countdown_value = trial_start_time - clock.time_double();
 			text_countdown.set_caption( string(int(countdown_value/1000)+1), true );
@@ -220,7 +238,6 @@ begin
 		until
 			h > 3
 		begin
-			
 			
 			array_disc_check_xy[h][1] = array_disc_current_xy[h][1] + array_disc_speed_xy[h][1];
 			array_disc_check_xy[h][2] = array_disc_current_xy[h][2] + array_disc_speed_xy[h][2];
@@ -380,14 +397,22 @@ begin
 		elseif response_manager.last_response() == 3 then
 			trial1.set_duration( forever );
 		end;
+		
 
 		debug1.set_caption( trial_state, true );
 		if frame_count == 0 then #nothing
+			tracking_accuracy = 0
 		else
-			debug2.set_caption( "Frames inside: " + string(frames_inside_disc) +
-				"\nTotal Frames: " + string(frame_count) +
-				"\n" + string(round((double(frames_inside_disc)/double(frame_count))*100,2)) , true );
+		tracking_accuracy = double(frames_inside_disc)/double(frame_count)*100;
 		end;
+
+		debug2.set_caption( "Frames inside: " + string(frames_inside_disc) +
+			"\nTotal Frames: " + string(frame_count) +
+			"\nAccuracy: " + string(round(tracking_accuracy,2)) +
+			"\nLevel: " + string(current_tracking_level) +
+			"\nTime Remaining: " + string( int((trial_end_time - clock.time_double() ))/1000 ) +
+			"\nBL prop.speed: " + string(tracking_staircase_percentages [current_tracking_level]), true );
+
 		# # # # # # #
 		
 		# Present trial/frame
@@ -401,7 +426,7 @@ begin
 			last_response = response_manager.last_response();
 			
 			if trial_state == "STANDBY" && mouse_on_target_disc == true && last_response == 2 then
-				trial_state = "GO FRAME"; # changes to "COUNTDOWN" once speed values are set are beginning of loop
+				trial_state = "GO FRAME"; # changes to "COUNTDOWN" once speed values are set at beginning of loop
 			else
 			end;
 		else
@@ -413,6 +438,35 @@ begin
 		end;
 
 	end;
+	
+	# calculate how far accuracy differs from target band
+	
+	int tracking_level_change;
+	
+	if tracking_accuracy < tracking_target_min_accuracy then
+		# accuracy too low
+		tracking_level_change = -(int(( tracking_target_min_accuracy - tracking_accuracy ) / 1.75) + 1);
+
+	elseif tracking_accuracy > tracking_target_max_accuracy then
+		# accuracy too high
+		tracking_level_change = int( abs( tracking_target_max_accuracy - tracking_accuracy ) / 1.75) + 1;
+
+	else
+		# accuracy okay
+		tracking_level_change = 0;
+	end;
+
+	# adjust difficulty level for next trial, keep within bounds
+		
+	current_tracking_level = current_tracking_level + tracking_level_change;
+
+	if current_tracking_level < 1 then
+		current_tracking_level = 1
+	elseif current_tracking_level > tracking_staircase_percentages.count() then
+		current_tracking_level = tracking_staircase_percentages.count()
+	else
+	end;
+	
 	
 	trial_count = trial_count + 1;
 end;

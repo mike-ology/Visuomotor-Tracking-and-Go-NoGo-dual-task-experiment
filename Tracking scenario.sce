@@ -9,7 +9,7 @@ default_clear_active_stimuli = true;
 default_background_color = 0, 0, 0;
 default_font = "Arial";
 default_font_size = 36;
-default_text_color = 0, 0, 0;
+default_text_color = 255, 255, 255;
 default_formatted_text = true;
 
 begin;
@@ -37,7 +37,83 @@ array {
 		}disc3;
 }disc_array;
 
-trial{
+array {
+	bitmap {
+		filename = "hexagon_blue.png";
+		height = 100;
+		width = 100;
+		preload = true;
+	}bitmap1;
+
+	bitmap {
+		filename = "hexagon_green.png";
+		height = 100;
+		width = 100;
+		preload = true;
+	};
+	bitmap {
+		filename = "hexagon_red.png";
+		height = 100;
+		width = 100;
+		preload = true;
+	};
+	bitmap {
+		filename = "hexagon_yellow.png";
+		height = 100;
+		width = 100;
+		preload = true;
+	};
+	bitmap {
+		filename = "square_blue.png";
+		height = 100;
+		width = 100;
+		preload = true;
+	};
+	bitmap {
+		filename = "square_green.png";
+		height = 100;
+		width = 100;
+		preload = true;
+	};
+	bitmap {
+		filename = "square_red.png";
+		height = 100;
+		width = 100;
+		preload = true;
+	};
+	bitmap {
+		filename = "square_yellow.png";
+		height = 100;
+		width = 100;
+		preload = true;
+	};
+	bitmap {
+		filename = "star_blue.png";
+		height = 100;
+		width = 100;
+		preload = true;
+	};
+	bitmap {
+		filename = "star_green.png";
+		height = 100;
+		width = 100;
+		preload = true;
+	};
+	bitmap {
+		filename = "star_red.png";
+		height = 100;
+		width = 100;
+		preload = true;
+	};
+	bitmap {
+		filename = "star_yellow.png";
+		height = 100;
+		width = 100;
+		preload = true;
+	};
+}array_shapes;
+
+trial {
 	trial_type = specific_response;
 	terminator_button = 1, 2, 3, 4;
 	trial_duration = 1;
@@ -102,7 +178,33 @@ trial{
 	
 }trial1;
 
-
+trial {
+	trial_type = specific_response;
+	terminator_button = 1;
+	trial_duration = forever;
+	all_responses = false;
+	stimulus_event {
+		picture {
+			text {
+				caption = "Last run accuracy: XX%";
+			} text_accuracy;
+			x = 0; y = 100;
+			text {
+				caption = "Current level: XX/49";
+			} text_level;
+			x = 0; y = 0;
+			text {
+				caption = "Press SPACEBAR to go to the next trial, and click the circle to initiate it";
+			} text_proceed;
+			x = 0; y = -200;
+			bitmap bitmap1;
+			x = 0; y = 0;
+		}message_pic;
+		response_active = true;
+		target_button = 1;
+	};
+}message_trial;
+	
 begin_pcl;
 
 double max_x = display_device.width() / 2  - (disc1.width()/2);
@@ -118,29 +220,21 @@ mse.set_restricted( 2, true );
 mse.set_pos( 1, 0 ); 
 mse.set_pos( 2, 0 );
 
+double last_mse_x = 0;
+double last_ms_y = 0;
+
+array <string> array_edge_collision [3];
+array <bool> array_disc_collision[4][2];
+array <int> array_edges_aligned[3][4];
 
 array <double> array_closest_noncolliding_x [3][0];
 array <double> array_closest_noncolliding_y [3][0];
 
-array <string> array_edge_collision [3];
-
-array <double> array_starting_coordinates [7][2] = { { -350.0, 350.0 }, { 350.0, 350.0 }, { -350.0, 0.0 }, { 350.0, 0.0 }, { -350.0, -350.0 }, { -0.0, -350.0 }, { 350.0, -350.0 } };
-
-array <bool> array_disc_collision[4][2];
-array <int> array_edges_aligned[3][4];
-
-double last_mse_x = 0;
-double last_ms_y = 0;
-
+double tracking_target_min_accuracy = 77.5;
+double tracking_target_max_accuracy = 82.5;
 int baseline_tracking_speed = 5;
 int baseline_tracking_level = 29;
 int current_tracking_level = baseline_tracking_level;
-
-double speed_x = baseline_tracking_speed;
-double speed_y = baseline_tracking_speed;
-
-double tracking_target_min_accuracy = 77.5;
-double tracking_target_max_accuracy = 82.5;
 
 array <double> tracking_staircase_percentages [49] = {
 10.87,15.22,19.57,23.91,28.26,32.61,36.96,41.30,45.65,50.00,54.35,58.70,63.04,67.39,71.74,76.09,
@@ -153,12 +247,28 @@ array <double> array_disc_check_xy [4][2] = { { 0.0, 0.0 }, { 0.0, 0.0 }, { 0.0,
 array <double> array_disc_next_xy [4][2] = { { 0.0, 0.0 }, { 0.0, 0.0 }, { 0.0, 0.0 }, { 0.0, 0.0 } };
 array <double> array_disc_speed_xy [4][2];
 
+array <double> array_starting_coordinates [7][2] = { { -350.0, 350.0 }, { 350.0, 350.0 }, { -350.0, 0.0 }, { 350.0, 0.0 }, { -350.0, -350.0 }, { -0.0, -350.0 }, { 350.0, -350.0 } };
+array <double> array_starting_jitter [10] = { 0.0, 5.0, 10.0, 15.0, 20.0, 25.0, 30.0, 35.0, 40.0, 45.0 };
+
+double speed_x = baseline_tracking_speed;
+double speed_y = baseline_tracking_speed;
+
 loop int i = 1 until i > 3 begin
 	array_disc_speed_xy[i][1] = speed_x;
 	array_disc_speed_xy[i][2] = speed_y;
 	i = i + 1;
 end;
-array <double> array_starting_jitter [10] = { 0.0, 5.0, 10.0, 15.0, 20.0, 25.0, 30.0, 35.0, 40.0, 45.0 };
+
+double last_accuracy = 0.0;
+
+# # # #
+
+array <double> array_shape_threshold_intervals [8] = { 2.0, 2.0, 2.0, 2.5, 2.5, 3.0, 3.0, 3.0 };
+array <int> array_shape_target_present [8] = { 1, 1, 1, 1, 0, 0, 0, 0 };
+array <int> array_shape_pointers [12] = { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12 };
+
+
+# # # #
 
 ################
 
@@ -180,7 +290,29 @@ begin
 	int frames_inside_disc = 0;
 	int frames_outside_disc = 0;
 	double tracking_accuracy;
+	
+	int shape_count = 1;
+	double time_present_next_shape = 0;
+	double time_shape_expires = 0;
+	double time_shape_feedback_ends = 0;
+	string shape_task_state;
+	array_shape_threshold_intervals.shuffle();
+	array_shape_target_present.shuffle();
+	array_shape_pointers.shuffle();
+	
 
+	message_pic.remove_part(4);
+	message_pic.add_part( array_shapes[array_shape_pointers[1]], 0.0, 0.0 );
+	
+	text_level.set_caption( "Current level: " + string( current_tracking_level ) + "/49", true );
+	
+	if last_accuracy == 0.0 then
+		text_accuracy.set_caption( "Previous accuracy: NO DATA", true);
+	else
+		text_accuracy.set_caption( "Previous accuracy: " + string(round(( last_accuracy ),2)) + "%", true);
+	end;
+	
+	message_trial.present();
 
 	# Set secondary disc starting coordinates
 	array_starting_coordinates.shuffle();
@@ -198,7 +330,6 @@ begin
 	until
 		trial_end_flag == true
 	begin
-		
 		
 		if trial_state == "STANDBY" then
 			# set disc speed to 0
@@ -218,6 +349,7 @@ begin
 			trial_initiated_time = clock.time_double();
 			trial_start_time = trial_initiated_time + 5000.0;
 			trial_end_time = trial_start_time + 20000.0;
+			time_present_next_shape = trial_start_time; #***
 		elseif trial_state == "COUNTDOWN" then
 			double countdown_value = trial_start_time - clock.time_double();
 			text_countdown.set_caption( string(int(countdown_value/1000)+1), true );
@@ -389,6 +521,7 @@ begin
 		disc1.redraw();
 
 		
+		
 		int last_response = 0;
 		int response_count = response_manager.total_response_count();		
 
@@ -412,7 +545,33 @@ begin
 			"\nLevel: " + string(current_tracking_level) +
 			"\nTime Remaining: " + string( int((trial_end_time - clock.time_double() ))/1000 ) +
 			"\nBL prop.speed: " + string(tracking_staircase_percentages [current_tracking_level]), true );
+	
 
+		#########################################################################################
+		#########################################################################################
+		# SHAPE TASK - present new shape if needed before trial refreshes
+				
+		if clock.time_double() >= time_present_next_shape && time_present_next_shape != 0 then
+			# present new shape
+			if array_shape_target_present[shape_count] == 1 then
+				# target present
+				pic1.add_part( array_shapes[array_shape_pointers[1]], 0.0, 0.0 );
+			elseif array_shape_target_present[shape_count] == 0 then
+				# target absent
+				pic1.add_part( array_shapes[array_shape_pointers[random(2, 12)]], 0.0, 0.0 );
+			else
+				term.print_line( "Logic Error" );
+			end;
+			
+			shape_task_state = "STIMULUS ACTIVE";
+			time_shape_expires = clock.time_double() + 400.0;
+			time_present_next_shape = clock.time_double() + ( array_shape_threshold_intervals[shape_count] * 1000 );
+		end;
+		
+		#########################################################################################
+		#########################################################################################
+
+		
 		# # # # # # #
 		
 		# Present trial/frame
@@ -431,6 +590,42 @@ begin
 			end;
 		else
 		end;
+
+		#########################################################################################
+		#########################################################################################
+		# SHAPE TASK - remove shape if response occurred, time expired, then present feedback
+
+		if ( clock.time_double() >= time_shape_expires && time_shape_expires != 0 ) 
+			|| ( last_response == 1 && shape_task_state == "STIMULUS ACTIVE" ) then
+
+			# remove previous shape on response or time expiring
+				pic1.remove_part( pic1.part_count() );
+				time_shape_expires = 0.0;
+				shape_task_state = "STIMULUS INACTIVE";
+				time_shape_feedback_ends = clock.time_double() + 50.0;
+				
+				if ( array_shape_target_present[shape_count] == 1 && last_response == 1 ) 
+					|| ( array_shape_target_present[shape_count] != 1 && last_response != 1 ) then
+						term.print_line( last_response );
+						shape_box.set_color( 0, 225, 0 );
+				else 
+					shape_box.set_color( 255, 0, 0 );
+				end;
+				
+				# increment shape counter
+				shape_count = shape_count + 1;
+		else
+		end;
+		
+		if clock.time_double() >= time_shape_feedback_ends && time_shape_feedback_ends != 0 then
+			shape_box.set_color( 255, 255, 255 );
+			time_shape_feedback_ends = 0;
+		else
+		end;
+		
+		#########################################################################################
+		#########################################################################################
+
 
 		if clock.time_double() > trial_end_time && trial_end_time != 0 then
 			trial_end_flag = true;
@@ -466,6 +661,9 @@ begin
 		current_tracking_level = tracking_staircase_percentages.count()
 	else
 	end;
+	
+	last_accuracy = tracking_accuracy;
+	
 	
 	
 	trial_count = trial_count + 1;

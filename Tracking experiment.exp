@@ -2,13 +2,13 @@
 <efn>D:\Personal\OneDrive\University\A. Current Projects\Trajectory Task\Tracking experiment.exp</efn>
 <author>MCWE</author>
 <con>
-<pause>P</pause>
+<pause>None</pause>
 <pause_code></pause_code>
 <port1>1</port1>
 <quit>Q</quit>
 <quit2>0</quit2>
 <quit_code></quit_code>
-<resume>R</resume>
+<resume>None</resume>
 <resume_code></resume_code>
 <send_output>0</send_output>
 <start_code></start_code>
@@ -586,28 +586,32 @@
 <sfn>all_scenarios</sfn>
 </sce>
 <sce>
-<idv>
+<abd>
 <device_type>3</device_type>
 <dx_device_type>19</dx_device_type>
 <ibn>Space</ibn>
+<ibn>P</ibn>
+<ibn>R</ibn>
 <idn>Keyboard</idn>
 <index>0</index>
+<index>2</index>
+<index>3</index>
+<label></label>
+<label></label>
 <label></label>
 <offset>57</offset>
-</idv>
-<idv>
+<offset>25</offset>
+<offset>19</offset>
+</abd>
+<abd>
 <device_type>2</device_type>
 <dx_device_type>18</dx_device_type>
 <ibn>Button 0</ibn>
-<ibn>Button 1</ibn>
 <idn>Mouse</idn>
 <index>1</index>
-<index>2</index>
-<label></label>
 <label></label>
 <offset>12</offset>
-<offset>13</offset>
-</idv>
+</abd>
 <mse>
 <device_type>2</device_type>
 <dx_device_type>18</dx_device_type>

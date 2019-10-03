@@ -1,0 +1,97 @@
+sub
+	collision_check (int disc_picture_part_index, int other_picture_part_index, int check_number)
+begin
+	
+	if disc_picture_part_index == other_picture_part_index then
+		return
+	else
+	end;
+	
+	int edge_align_count = 0;
+	
+	double disc_width = pic1.get_part(disc_picture_part_index).width();
+	double disc_height = pic1.get_part(disc_picture_part_index).height();
+	double other_width = pic1.get_part(other_picture_part_index).width();
+	double other_height = pic1.get_part(other_picture_part_index).height();
+	
+	double disc_check_x = array_disc_check_xy[disc_picture_part_index][1];
+	double disc_check_y = array_disc_check_xy[disc_picture_part_index][2];
+	double other_check_x = array_disc_check_xy[other_picture_part_index][1];
+	double other_check_y = array_disc_check_xy[other_picture_part_index][2];
+	
+	## Checks to see if disc coordinates overlap with other objects coordinates
+	
+	if disc_check_x > other_check_x - (other_width/2) - (disc_width/2) && disc_check_x < other_check_x + (other_width/2) + (disc_width/2) then
+		edge_align_count = edge_align_count + 1;
+	else
+	end;
+
+	if disc_check_y > other_check_y - (other_height/2) - (disc_height/2) && disc_check_y < other_check_y + (other_height/2) + (disc_height/2) then
+		edge_align_count = edge_align_count + 1;
+	else
+	end;
+	
+	array_edges_aligned[disc_picture_part_index][other_picture_part_index] = edge_align_count;
+	
+	## If disc coordinates will overlap with on both the x and y axis, a collision will occur at the current trajectory
+	## Calculate where the collision will occur
+	
+	if edge_align_count >= 2 then
+		
+		if abs( disc_check_x - other_check_x ) > abs( disc_check_y - other_check_y ) then
+			# collision will occur on x-axis
+			array_disc_collision[disc_picture_part_index][1] = true;
+
+			if disc_check_x < other_check_x then
+				#collision_x_side = "LEFT";
+				array_closest_noncolliding_x[disc_picture_part_index].add( other_check_x - (other_width/2) - (disc_width/2) );
+			elseif disc_check_x > other_check_x then
+				#collision_x_side = "RIGHT";
+				array_closest_noncolliding_x[disc_picture_part_index].add( other_check_x + (other_width/2) + (disc_width/2) );
+			else
+			end;
+			
+		elseif abs( disc_check_x - other_check_x ) < abs( disc_check_y - other_check_y ) then
+			# collision will occur on y-axis
+			array_disc_collision[disc_picture_part_index][2] = true;
+
+			if disc_check_y > other_check_y then
+				#collision_y_side = "TOP";
+				array_closest_noncolliding_y[disc_picture_part_index].add( other_check_y + (other_height/2) + (disc_height/2) );
+			elseif disc_check_y < other_check_y then
+				#collision_y_side = "BOTTOM";
+				array_closest_noncolliding_y[disc_picture_part_index].add( other_check_y - (other_height/2) - (disc_height/2) );
+			end;
+
+		elseif abs( disc_check_x - other_check_x ) == abs( disc_check_y - other_check_y ) then
+
+			array_disc_collision[disc_picture_part_index][1] = true;
+
+			if disc_check_x < other_check_x then
+				#collision_x_side = "LEFT";
+				array_closest_noncolliding_x[disc_picture_part_index].add( other_check_x - (other_width/2) - (disc_width/2) );
+			elseif disc_check_x > other_check_x then
+				#collision_x_side = "RIGHT";
+				array_closest_noncolliding_x[disc_picture_part_index].add( other_check_x + (other_width/2) + (disc_width/2) );
+			else
+			end;
+
+			array_disc_collision[disc_picture_part_index][2] = true;
+
+			if disc_check_y > other_check_y then
+				#collision_y_side = "TOP";
+				array_closest_noncolliding_y[disc_picture_part_index].add( other_check_y + (other_height/2) + (disc_height/2) );
+			elseif disc_check_y < other_check_y then
+				#collision_y_side = "BOTTOM";
+				array_closest_noncolliding_y[disc_picture_part_index].add( other_check_y - (other_height/2) - (disc_height/2) );
+			end;
+
+		else
+		end;
+		
+	else
+
+	end;
+
+	return;
+end;

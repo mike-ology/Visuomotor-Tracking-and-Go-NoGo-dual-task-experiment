@@ -295,17 +295,30 @@ int current_shape_level = baseline_shape_level;
 
 array <string> trial_type [5] = { "tracking threshold", "shape threshold", "tracking task", "shape task", "dual task" };
 
+string trial_state;
+bool run_trial_initialisation;
+bool run_tracking_initialisation;
+bool run_shape_initialisation;
+int block;
+int frame_count;
+int frames_inside_disc;
+int frames_outside_disc;
+double tracking_accuracy;
+int last_response;
+bool mouse_on_target_disc;		
+
 
 # # # #
 
 ################
 
 include "sub_collision_check.pcl";
+include "sub_disc_task_pcl_part.pcl";
 
 ################
 
 loop
-	int block = 1
+	block = 1
 until
 	block > 5
 begin
@@ -319,13 +332,7 @@ begin
 	elseif trial_type[block] == "shape threshold" then
 		trial_count_max = 9;
 		trial_duration = 20000; # or is it 120000??
-	elseif trial_type[block] == "tracking task" then
-		trial_count_max = 5;
-		trial_duration = 180000;
-	elseif trial_type[block] == "shape task" then
-		trial_count_max = 5;
-		trial_duration = 180000; 
-	elseif trial_type[block] == "dual task" then
+	elseif trial_type[block] == "tracking task" || trial_type[block] == "shape task" || trial_type[block] == "dual task" then
 		trial_count_max = 5;
 		trial_duration = 180000;
 	else
@@ -341,13 +348,16 @@ begin
 		double trial_initiated_time;
 		double trial_start_time;
 		double trial_end_time;
-		string trial_state = "STANDBY";
-		int frame_count = 0;
-		int frames_inside_disc = 0;
-		int frames_outside_disc = 0;
-		double tracking_accuracy;
-		int last_response = 0;
-		bool mouse_on_target_disc;		
+		trial_state = "STANDBY";
+		run_trial_initialisation = false;
+		run_tracking_initialisation = false;
+		run_shape_initialisation = false;
+		frame_count = 0;
+		frames_inside_disc = 0;
+		frames_outside_disc = 0;
+		tracking_accuracy;
+		last_response = 0;
+		mouse_on_target_disc;		
 		
 		int shape_count = 1;
 		double time_present_next_shape = 0;
@@ -400,81 +410,37 @@ begin
 			mse.poll();
 			pic1.set_part_x( 5, mse.x() );
 			pic1.set_part_y( 5, mse.y() );
+			
+			### INITIATE TRIAL ###
 
-
-			if new_response == true then
-				# response occurred on previous frame
-				registered_responses = registered_responses + 1;
-				debug3.set_caption( "Last response: " + string(last_response) + ", Registered Responses: " + string(registered_responses), true );
-				
-				display_window.draw_text( "Last response: " + string(last_response) + " occurred at: " + string(clock.time_double()) );
-				
+			if trial_type[block] == "tracking threshold" || trial_type[block] == "tracking task"  then
 				if trial_state == "STANDBY" && mouse_on_target_disc == true && last_response == 2 then
-					trial_state = "GO FRAME"; # changes to "COUNTDOWN" once speed values are set at beginning of loop
+					run_trial_initialisation = true;
+					run_tracking_initialisation = true;
 				else
 				end;
-
-				if last_response == 4 then
-					trial1.set_duration( 1 );
-				elseif last_response == 3 then
-					trial1.set_duration( forever );
-				end;
-				
-				new_response = false;
-
-			else
-			end;
-
-			# check if mouse overlaps with disc
-			
-			double disc_distance_x = abs(mse.x_position() - pic1.get_part_x(1));
-			double disc_distance_y = abs(mse.y_position() - pic1.get_part_y(1));
-			double disc_distance_h = sqrt( ( disc_distance_x * disc_distance_x ) + ( disc_distance_y * disc_distance_y ) );
-			if disc_distance_h > disc1.width()/2 then
-				disc1.set_color( 255, 0, 0, 255 );
-				mouse_on_target_disc = false;
-				if trial_state == "TRIAL ACTIVE" then
-					frames_outside_disc = frames_outside_disc + 1;
-					frame_count = frame_count + 1;
+			elseif trial_type[block] == "shape threshold" || trial_type[block] == "shape task" then
+				if trial_state == "STANDBY" && last_response == 1 then
+					run_trial_initialisation = true;
+					run_shape_initialisation = true;
 				else
 				end;
-			else
-				disc1.set_color( 0, 255, 0, 255 );
-				mouse_on_target_disc = true;
-				if trial_state == "TRIAL ACTIVE" then
-					frames_inside_disc = frames_inside_disc + 1;
-					frame_count = frame_count + 1;
+			elseif trial_type[block] == "dual task" then
+				if trial_state == "STANDBY" && mouse_on_target_disc == true && last_response == 2 then
+					run_trial_initialisation = true;
+					run_tracking_initialisation = true;
+					run_shape_initialisation = true;
 				else
 				end;
 			end;
-			
-			disc1.redraw();
-			
-			if trial_state == "STANDBY" then
-				# set disc speed to 0
-				loop int i = 1 until i > 3 begin
-					array_disc_speed_xy[i][1] = 0;
-					array_disc_speed_xy[i][2] = 0;
-					i = i + 1;
-				end;
-			elseif trial_state == "GO FRAME" then
 
-				# set disc spped to starting speed
-				if trial_type[block] == "tracking threshold" || trial_type[block] == "tracking task" || trial_type[block] == "dual task" then
-					loop int i = 1 until i > 3 begin
-						array_disc_speed_xy[i][1] = speed_x * (tracking_staircase_percentages[current_tracking_level]/100);
-						array_disc_speed_xy[i][2] = speed_y * (tracking_staircase_percentages[current_tracking_level]/100);
-						i = i + 1;
-					end;
-				else
-					# keep speed at 0 for single shape task
-				end;
-				
+			if trial_state == "STANDBY" && run_trial_initialisation == true then
 				trial_state = "COUNTDOWN";
 				trial_initiated_time = clock.time_double();
 				trial_start_time = trial_initiated_time + 5000.0;
 				trial_end_time = trial_start_time + 20000.0;
 				time_present_next_shape = trial_start_time; #***
+				run_trial_initialisation = false;
 			elseif trial_state == "COUNTDOWN" then
 				double countdown_value = trial_start_time - clock.time_double();
 				text_countdown.set_caption( string(int(countdown_value/1000)+1), true );
@@ -485,157 +451,17 @@ begin
 				end;
 			else		
 			end;
-
-			### Loop that determines the x/y coordinates of each disc's position on the next frame before collisions
-			# are taken into account. Updates to disc's next positions implemented if collisions would occur.
-			# Loop also resets collision state.
-
-			loop
-				int h = 1;
-			until
-				h > 3
-			begin
-				
-				array_disc_check_xy[h][1] = array_disc_current_xy[h][1] + array_disc_speed_xy[h][1];
-				array_disc_check_xy[h][2] = array_disc_current_xy[h][2] + array_disc_speed_xy[h][2];
-				array_disc_collision[h][1] = false;
-				array_disc_collision[h][2] = false;
-
-				### loop that checks for collisions with the edge of the screen
-
-				double check_x = array_disc_check_xy[h][1];
-				double check_y = array_disc_check_xy[h][2];
-				array_edge_collision[h] = "NONE";
-				
-				if check_x > max_x then
-					array_edge_collision[h] = "RIGHT";
-				elseif check_x < min_x then
-					array_edge_collision[h] = "LEFT";
-				else
-				end;
-				
-				if check_y > max_y then
-					array_edge_collision[h] = "TOP";
-				elseif check_y < min_y then
-					array_edge_collision[h] = "BOTTOM";
-				else
-				end;
-				
-				### Check for collisions with other discs and centre square
-			
-				array_closest_noncolliding_x[h].resize(0);
-				array_closest_noncolliding_y[h].resize(0);
-				
-				collision_check( h, 1, 1 );
-				collision_check( h, 2, 1 );
-				collision_check( h, 3, 1 );
-				collision_check( h, 4, 1 );
-
-				### NEW COORDINATES IF NO COLLISION TAKES PLACE
-				
-				double next_x = array_disc_current_xy[h][1] + array_disc_speed_xy[h][1];
-				double next_y = array_disc_current_xy[h][2] + array_disc_speed_xy[h][2];
-
-				### SET COORDINATES BASED ON IMPENDING COLLISION WITH SCREEN EDGE
-				
-				if array_edge_collision[h] == "LEFT" then
-					next_x = min_x;
-					array_disc_speed_xy[h][1] = array_disc_speed_xy[h][1] * (-1.0);
-				elseif array_edge_collision[h] == "RIGHT" then
-					next_x = max_x;
-					array_disc_speed_xy[h][1] = array_disc_speed_xy[h][1] * (-1.0);
-				elseif array_edge_collision[h] == "TOP" then
-					next_y = max_y;
-					array_disc_speed_xy[h][2] = array_disc_speed_xy[h][2] * (-1.0);
-				elseif array_edge_collision[h] == "BOTTOM" then
-					next_y = min_y;
-					array_disc_speed_xy[h][2] = array_disc_speed_xy[h][2] * (-1.0);
-				else
-				end;
-
-				### SET COORDINATES BASED ON IMPENDING COLLISION WITH ANOTHER DISC OR CENTRE SQUARE
-
-				if array_disc_collision[h][1] == true then
-					
-					# adjust x axis
-					double x_smallest_distance;
-					# obtain smallest distance to a collision on x axis
-					loop int j = 1 until j > array_closest_noncolliding_x[h].count()
-					begin
-						if j == 1 then
-							x_smallest_distance = array_closest_noncolliding_x[h][j]
-						elseif array_closest_noncolliding_x[h][j] == 0 then
-							# do nothing
-						elseif array_closest_noncolliding_x[h][j] < x_smallest_distance then
-							x_smallest_distance = array_closest_noncolliding_x[h][j]
-						else
-						end;
-						j = j + 1;
-					end;
-					
-					next_x = x_smallest_distance;
-					array_disc_speed_xy[h][1] = array_disc_speed_xy[h][1] * (-1.0);
-				else
-				end;
-				
-				if array_disc_collision[h][2] == true then
-					# adjust y axis
-
-					double y_smallest_distance;
-					# obtain smallest distance to a collision on y axis
-					loop int j = 1 until j > array_closest_noncolliding_y[h].count()
-					begin
-						if j == 1 then
-							y_smallest_distance = array_closest_noncolliding_y[h][j]
-						elseif array_closest_noncolliding_y[h][j] == 0 then
-							# do nothing
-						elseif array_closest_noncolliding_y[h][j] < y_smallest_distance then
-							y_smallest_distance = array_closest_noncolliding_y[h][j]
-						else
-						end;
-						j = j + 1;
-					end;
-					
-					next_y = y_smallest_distance;
-					array_disc_speed_xy[h][2] = array_disc_speed_xy[h][2] * (-1.0);
-				
-				else
-				end;
-				
-				array_disc_current_xy[h][1] = next_x;
-				array_disc_current_xy[h][2] = next_y;
-				pic1.set_part_x( h, array_disc_current_xy[h][1] );
-				pic1.set_part_y( h, array_disc_current_xy[h][2] );
-				h = h + 1;		
-					
-			end;
-
-			#^^ DISC LOCATIONS UPDATED, TRAJECTORIES UPDATED ^^#
-
-
-
-			
-			
-			
-
-			#debug1.set_caption( trial_state, true );
-			if frame_count == 0 then #nothing
-				tracking_accuracy = 0
-			else
-			tracking_accuracy = double(frames_inside_disc)/double(frame_count)*100;
-			end;
-
-			debug2.set_caption( "Frames inside: " + string(frames_inside_disc) +
-				"\nTotal Frames: " + string(frame_count) +
-				"\nAccuracy: " + string(round(tracking_accuracy,2)) +
-				"\nLevel: " + string(current_tracking_level) +
-				"\nTime Remaining: " + string( int((trial_end_time - clock.time_double() ))/1000 ) +
-				"\nBL prop.speed: " + string(tracking_staircase_percentages [current_tracking_level]), true );
 		
+			# # # # # # # # # # #
 
+			disc_task_pcl_part();
+
+			# # # # # # # # # # #
+			
 			#########################################################################################
 			#########################################################################################
-					
+			# SHAPE TASK		
+
 			if ( clock.time_double() >= time_shape_expires && time_shape_expires != 0 ) 
 				|| ( last_response == 1 && shape_task_state == "STIMULUS ACTIVE" ) then
 
@@ -654,9 +480,7 @@ begin
 							# incorrect (MISS or FALSE ALARM)
 						shape_box.set_color( 255, 0, 0 );
 					end;
-					
-					term.print_line( "Target present: " + string(array_shape_target_present[shape_count]) + " , last button: " + string(last_response) + ", time remaining: " + string(time_remaining) );
-					
+										
 					# increment shape counter
 					shape_count = shape_count + 1;
 			else
@@ -681,16 +505,20 @@ begin
 			end;
 
 			
-			
 			if clock.time_double() >= time_shape_feedback_ends && time_shape_feedback_ends != 0 then
 				shape_box.set_color( 255, 255, 255 );
 				time_shape_feedback_ends = 0;
 			else
 			end;
 			
+			debug2.set_caption( "Frames inside: " + string(frames_inside_disc) +
+				"\nTotal Frames: " + string(frame_count) +
+				"\nAccuracy: " + string(round(tracking_accuracy,2)) +
+				"\nLevel: " + string(current_tracking_level) +
+				"\nTime Remaining: " + string( int((trial_end_time - clock.time_double() ))/1000 ) +
+				"\nBL prop.speed: " + string(tracking_staircase_percentages [current_tracking_level]), true );
+
 			# # # # # # #
-			
-			
 
 			trial1.present();
 			
@@ -703,9 +531,28 @@ begin
 			else
 				# no response registered
 				last_response = 0;
+				debug1.set_caption("Response count: " + string(response_count), true);
 			end;
 				
 			# # # # # # #
+
+			run_tracking_initialisation = false;
+
+			if new_response == true then
+				# response occurred on previous frame
+				registered_responses = registered_responses + 1;
+				debug3.set_caption( "Last response: " + string(last_response) + ", Registered Responses: " + string(registered_responses), true );
+				
+				display_window.draw_text( "Last response: " + string(last_response) + " occurred at: " + string(clock.time_double()) );
+				
+
+				
+				new_response = false;
+
+			else
+				debug3.set_caption( "Last response: " + string(last_response) + ", Registered Responses: " + string(registered_responses), true );
+			end;
+
 
 
 			if clock.time_double() > trial_end_time && trial_end_time != 0 then

@@ -280,15 +280,15 @@ double last_accuracy = 0.0;
 
 # # # #
 
-array <double> array_shape_threshold_intervals [8] = { 2.0, 2.0, 2.0, 2.5, 2.5, 3.0, 3.0, 3.0 };
+array <double> array_shape_threshold_intervals [8] = { 2.0, 2.5, 3.0 };
 array <int> array_shape_target_present [8] = { 1, 1, 1, 1, 0, 0, 0, 0 };
 array <int> array_shape_pointers [12] = { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12 };
 
 array <double> shape_staircase_percentages [49] = { 222.22,216.67,211.11,205.56,200.00,194.44,188.89,183.33,177.78,172.22,166.67,
 161.11,155.56,150.00,144.44,138.89,133.33,127.78,122.22,120.00,117.78,115.56,113.33,111.11,108.89,106.67,104.44,102.22,100.00,97.78,
 95.56,93.33,91.11,88.89,86.67,84.44,82.22,80.00,77.78,75.56,73.33,71.11,68.89,66.67,64.44,62.22,60.00,57.78,55.56 };
-double tracking_shape_min_accuracy = 77.5;
-double tracking_shape_max_accuracy = 82.5;
+double shape_target_min_accuracy = 77.5;
+double shape_target_max_accuracy = 82.5;
 int baseline_shape_duration = 450;
 int baseline_shape_level = 29;
 int current_shape_level = baseline_shape_level;
@@ -305,7 +305,7 @@ int frames_inside_disc;
 int frames_outside_disc;
 double tracking_accuracy;
 int last_response;
-bool mouse_on_target_disc;		
+bool mouse_on_target_disc;
 
 
 # # # #
@@ -318,23 +318,27 @@ include "sub_disc_task_pcl_part.pcl";
 ################
 
 loop
-	block = 1
+	block = 2
 until
 	block > 5
 begin
 	
 	int trial_count_max;
+	int shape_mini_trials;
 	double trial_duration;
 	
 	if trial_type[block] == "tracking threshold" then
 		trial_count_max = 9;
 		trial_duration = 60000;
+		shape_mini_trials = 0;
 	elseif trial_type[block] == "shape threshold" then
 		trial_count_max = 9;
-		trial_duration = 20000; # or is it 120000??
+		trial_duration = 120000;
+		shape_mini_trials = 48;
 	elseif trial_type[block] == "tracking task" || trial_type[block] == "shape task" || trial_type[block] == "dual task" then
 		trial_count_max = 5;
 		trial_duration = 180000;
+		shape_mini_trials = 72;
 	else
 		term.print_line( "BLOCK ERROR" );
 	end;
@@ -367,6 +371,9 @@ begin
 		array_shape_threshold_intervals.shuffle();
 		array_shape_target_present.shuffle();
 		array_shape_pointers.shuffle();
+		array <int> array_shape_trial_accuracy [0];
+		double last_shape_RT;
+		double time_current_shape;
 		
 		message_pic.remove_part(5);
 		message_pic.add_part( array_shapes[array_shape_pointers[1]], 0.0, 0.0 );
@@ -391,12 +398,27 @@ begin
 		array_disc_current_xy[3][1] = array_starting_coordinates[3][1] + array_starting_jitter[5];
 		array_disc_current_xy[3][2] = array_starting_coordinates[3][2] + array_starting_jitter[6];
 
+		### PRE-TRIAL SETUP TRIAL ###
+
+		if trial_type[block] == "tracking threshold" || trial_type[block] == "tracking task"  then
+			mse.set_pos( 1, 0.0 );
+			mse.set_pos( 2, 0.0 );
+			cursor_object.set_caption( "+", true );
+		elseif trial_type[block] == "shape threshold" || trial_type[block] == "shape task" then
+			mse.set_pos( 1, max_x );
+			mse.set_pos( 2, max_y );
+			cursor_object.set_caption( " ", true );
+		elseif trial_type[block] == "dual task" then
+			mse.set_pos( 1, 0.0 );
+			mse.set_pos( 2, 0.0 );
+			cursor_object.set_caption( "+", true );
+		end;
 		
 		# Set current value for response count. Every registered response will manually increment this value immediatelly follow trial presentation.
 		# Doing this manually is necessary as a response may be missed if it takes longer than a frame to record it. By the time it is recorded,
 		# the inbuilt response counter has already registered a new frame with no response (thus 'missing' slow response recordings).
 
-		int registered_responses = response_manager.total_response_count();
+		#int registered_responses = response_manager.total_response_count();
 		int response_count = response_manager.total_response_count();
 
 		loop
@@ -405,11 +427,6 @@ begin
 			trial_end_flag == true
 		begin
 
-			### UPDATE MOUSE LOCATION ###
-
-			mse.poll();
-			pic1.set_part_x( 5, mse.x() );
-			pic1.set_part_y( 5, mse.y() );
 			
 			### INITIATE TRIAL ###
 
@@ -438,8 +455,7 @@ begin
 				trial_state = "COUNTDOWN";
 				trial_initiated_time = clock.time_double();
 				trial_start_time = trial_initiated_time + 5000.0;
-				trial_end_time = trial_start_time + 20000.0;
-				time_present_next_shape = trial_start_time; #***
+				trial_end_time = trial_start_time + trial_duration;
 				run_trial_initialisation = false;
 			elseif trial_state == "COUNTDOWN" then
 				double countdown_value = trial_start_time - clock.time_double();
@@ -452,9 +468,16 @@ begin
 			else		
 			end;
 		
+			### UPDATE MOUSE LOCATION ###
+
+			mse.poll();
+			pic1.set_part_x( 5, mse.x_position() );
+			pic1.set_part_y( 5, mse.y_position() );
+
 			# # # # # # # # # # #
 
-			disc_task_pcl_part();
+			disc_task_pcl_part(); #subroutine
+			run_tracking_initialisation = false;
 
 			# # # # # # # # # # #
 			
@@ -462,31 +485,33 @@ begin
 			#########################################################################################
 			# SHAPE TASK		
 
-			if ( clock.time_double() >= time_shape_expires && time_shape_expires != 0 ) 
-				|| ( last_response == 1 && shape_task_state == "STIMULUS ACTIVE" ) then
+			# Set up initiation
+			if trial_state == "COUNTDOWN" && run_shape_initialisation == true && 
+				( trial_type[block] == "shape threshold" || trial_type[block] == "shape task" || trial_type[block] == "dual task" ) then
+					time_present_next_shape = trial_start_time;
+					array_shape_trial_accuracy.resize( 0 );
+					array_shape_threshold_intervals.resize( 0 );
+					array_shape_target_present.resize( 0 );
 
-				# remove previous shape on response or time expiring
-					pic1.remove_part( pic1.part_count() );
-					double time_remaining = time_shape_expires - clock.time_double();
-					time_shape_expires = 0.0;
-					shape_task_state = "STIMULUS INACTIVE";
-					time_shape_feedback_ends = clock.time_double() + 200.0;
-					
-					if ( array_shape_target_present[shape_count] == 1 && last_response == 1 ) 
-						|| ( array_shape_target_present[shape_count] != 1 && last_response != 1 ) then
-							# correct (HIT or CORRECT REJECTION)
-							shape_box.set_color( 0, 225, 0 );
-					else 
-							# incorrect (MISS or FALSE ALARM)
-						shape_box.set_color( 255, 0, 0 );
+					loop int i = 1 until i > shape_mini_trials / 3 begin
+						array_shape_threshold_intervals.add( 2.0 );
+						array_shape_threshold_intervals.add( 2.5 );
+						array_shape_threshold_intervals.add( 3.0 );
+						i = i + 1;
 					end;
-										
-					# increment shape counter
-					shape_count = shape_count + 1;
+
+					loop int i = 1 until i > shape_mini_trials / 2 begin
+						array_shape_target_present.add( 1 );
+						array_shape_target_present.add( 0 );
+						i = i + 1;
+					end;
+
+					array_shape_threshold_intervals.shuffle();
+					array_shape_target_present.shuffle();
+					run_shape_initialisation = false;
 			else
 			end;
-			
-			
+
 			if clock.time_double() >= time_present_next_shape && time_present_next_shape != 0 then
 				# present new shape
 				if array_shape_target_present[shape_count] == 1 then
@@ -500,10 +525,41 @@ begin
 				end;
 				
 				shape_task_state = "STIMULUS ACTIVE";
+				
+				time_current_shape = clock.time_double();
 				time_shape_expires = clock.time_double() + 400.0;
 				time_present_next_shape = clock.time_double() + ( array_shape_threshold_intervals[shape_count] * 1000 );
 			end;
 
+
+			if ( clock.time_double() >= time_shape_expires && time_shape_expires != 0 ) 
+				|| ( last_response == 1 && shape_task_state == "STIMULUS ACTIVE" ) then
+
+				# remove previous shape on response or time expiring
+					pic1.remove_part( pic1.part_count() );
+					last_shape_RT = clock.time() - time_current_shape;
+
+					double time_remaining = time_shape_expires - clock.time_double();
+					time_shape_expires = 0.0;
+					shape_task_state = "STIMULUS INACTIVE";
+					time_shape_feedback_ends = clock.time_double() + 200.0;
+					
+					if ( array_shape_target_present[shape_count] == 1 && last_response == 1 ) 
+						|| ( array_shape_target_present[shape_count] != 1 && last_response != 1 ) then
+							# correct (HIT or CORRECT REJECTION)
+							array_shape_trial_accuracy.add( 1 );
+							shape_box.set_color( 0, 225, 0 );
+					else 
+							# incorrect (MISS or FALSE ALARM)
+							array_shape_trial_accuracy.add( 0 );
+							shape_box.set_color( 255, 0, 0 );
+					end;
+										
+					# increment shape counter
+					shape_count = shape_count + 1;
+			else
+			end;
+			
 			
 			if clock.time_double() >= time_shape_feedback_ends && time_shape_feedback_ends != 0 then
 				shape_box.set_color( 255, 255, 255 );
@@ -511,49 +567,37 @@ begin
 			else
 			end;
 			
+
+
 			debug2.set_caption( "Frames inside: " + string(frames_inside_disc) +
 				"\nTotal Frames: " + string(frame_count) +
 				"\nAccuracy: " + string(round(tracking_accuracy,2)) +
 				"\nLevel: " + string(current_tracking_level) +
 				"\nTime Remaining: " + string( int((trial_end_time - clock.time_double() ))/1000 ) +
-				"\nBL prop.speed: " + string(tracking_staircase_percentages [current_tracking_level]), true );
+				"\nBL prop.speed: " + string(tracking_staircase_percentages [current_tracking_level]) +
+				"\n" +
+				"\nLast shape RT: " + string(int(round(last_shape_RT,1))), true );
+
 
 			# # # # # # #
+
+
+			# PRESENT FRAME
 
 			trial1.present();
-			
+
+			# CHECK FOR RESPONSE
+
 			if response_manager.total_response_count() > response_count then
-				# response occurred
 				last_response = response_manager.last_response();
-				new_response = true;
 				response_count = response_count + 1;
-				debug1.set_caption("Response count: " + string(response_count), true);
+				#debug1.set_caption("Response count: " + string(response_count), true);
 			else
-				# no response registered
 				last_response = 0;
-				debug1.set_caption("Response count: " + string(response_count), true);
+				#debug1.set_caption("Response count: " + string(response_count), true);
 			end;
 				
-			# # # # # # #
-
-			run_tracking_initialisation = false;
-
-			if new_response == true then
-				# response occurred on previous frame
-				registered_responses = registered_responses + 1;
-				debug3.set_caption( "Last response: " + string(last_response) + ", Registered Responses: " + string(registered_responses), true );
-				
-				display_window.draw_text( "Last response: " + string(last_response) + " occurred at: " + string(clock.time_double()) );
-				
-
-				
-				new_response = false;
-
-			else
-				debug3.set_caption( "Last response: " + string(last_response) + ", Registered Responses: " + string(registered_responses), true );
-			end;
-
-
+			# CHECK IF TRIAL HAS EXPIRED
 
 			if clock.time_double() > trial_end_time && trial_end_time != 0 then
 				trial_end_flag = true;
@@ -568,23 +612,38 @@ begin
 		# calculate how far accuracy differs from target band
 		
 		int tracking_level_change;
+		int shape_level_change;
+		double shape_accuracy = arithmetic_mean( array_shape_trial_accuracy );
 		
 		if tracking_accuracy < tracking_target_min_accuracy then
 			# accuracy too low
 			tracking_level_change = -(int(( tracking_target_min_accuracy - tracking_accuracy ) / 1.75) + 1);
-
 		elseif tracking_accuracy > tracking_target_max_accuracy then
 			# accuracy too high
 			tracking_level_change = int( abs( tracking_target_max_accuracy - tracking_accuracy ) / 1.75) + 1;
-
 		else
 			# accuracy okay
 			tracking_level_change = 0;
 		end;
 
-		# adjust difficulty level for next trial, keep within bounds
+		if shape_accuracy < shape_target_min_accuracy then
+			# accuracy too low
+			shape_level_change = -(int(( shape_target_min_accuracy - shape_accuracy ) / 1.75) + 1);
+		elseif shape_accuracy > shape_target_max_accuracy then
+			# accuracy too high
+			shape_level_change = int( abs( shape_target_max_accuracy - shape_accuracy ) / 1.75) + 1;
+		else
+			# accuracy okay
+			shape_level_change = 0;
+		end;
+
+
+		# adjust difficulty level for next trial
 			
 		current_tracking_level = current_tracking_level + tracking_level_change;
+		current_shape_level = current_shape_level + shape_level_change;
+
+		# keep within level limits
 
 		if current_tracking_level < 1 then
 			current_tracking_level = 1
@@ -593,10 +652,19 @@ begin
 		else
 		end;
 		
-		last_accuracy = tracking_accuracy;
+		if current_shape_level < 1 then
+			current_shape_level = 1
+		elseif current_shape_level > shape_staircase_percentages.count() then
+			current_shape_level = shape_staircase_percentages.count()
+		else
+		end;
+
+		#last_accuracy = tracking_accuracy;
 		
+		# # # # #
 		
-		
+		term.print_line( current_shape_level );
+
 		trial_count = trial_count + 1;
 	end;
 	

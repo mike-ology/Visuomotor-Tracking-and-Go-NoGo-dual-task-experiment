@@ -1,0 +1,196 @@
+sub
+	disc_task_pcl_part
+begin
+
+	########################################################################################################
+	### Loop that determines the x/y coordinates of each disc's position on the next frame before collisions
+	# are taken into account. Updates to disc's next positions implemented if collisions would occur.
+	# Loop also resets collision state.
+
+	loop
+		int h = 1;
+	until
+		h > 3
+	begin
+
+		# SET DISC SPEED DEPENDING ON TRIAL STATE
+		
+		if trial_state == "STANDBY" then
+			# set disc speed to 0
+				array_disc_speed_xy[h][1] = 0;
+				array_disc_speed_xy[h][2] = 0;
+
+		elseif trial_state == "COUNTDOWN" && run_tracking_initialisation == true then
+		
+			# set disc spped to starting speed
+			if trial_type[block] == "tracking threshold" || trial_type[block] == "tracking task" || trial_type[block] == "dual task" then
+						array_disc_speed_xy[h][1] = speed_x * (tracking_staircase_percentages[current_tracking_level]/100);
+						array_disc_speed_xy[h][2] = speed_y * (tracking_staircase_percentages[current_tracking_level]/100);
+			else
+			end;
+
+		else		
+		end;
+
+
+		
+		array_disc_check_xy[h][1] = array_disc_current_xy[h][1] + array_disc_speed_xy[h][1];
+		array_disc_check_xy[h][2] = array_disc_current_xy[h][2] + array_disc_speed_xy[h][2];
+		array_disc_collision[h][1] = false;
+		array_disc_collision[h][2] = false;
+
+		### loop that checks for collisions with the edge of the screen
+
+		double check_x = array_disc_check_xy[h][1];
+		double check_y = array_disc_check_xy[h][2];
+		array_edge_collision[h] = "NONE";
+		
+		if check_x > max_x then
+			array_edge_collision[h] = "RIGHT";
+		elseif check_x < min_x then
+			array_edge_collision[h] = "LEFT";
+		else
+		end;
+		
+		if check_y > max_y then
+			array_edge_collision[h] = "TOP";
+		elseif check_y < min_y then
+			array_edge_collision[h] = "BOTTOM";
+		else
+		end;
+		
+		### Check for collisions with other discs and centre square
+	
+		array_closest_noncolliding_x[h].resize(0);
+		array_closest_noncolliding_y[h].resize(0);
+		
+		collision_check( h, 1, 1 );
+		collision_check( h, 2, 1 );
+		collision_check( h, 3, 1 );
+		collision_check( h, 4, 1 );
+
+		### NEW COORDINATES IF NO COLLISION TAKES PLACE
+		
+		double next_x = array_disc_current_xy[h][1] + array_disc_speed_xy[h][1];
+		double next_y = array_disc_current_xy[h][2] + array_disc_speed_xy[h][2];
+
+		### SET COORDINATES BASED ON IMPENDING COLLISION WITH SCREEN EDGE
+		
+		if array_edge_collision[h] == "LEFT" then
+			next_x = min_x;
+			array_disc_speed_xy[h][1] = array_disc_speed_xy[h][1] * (-1.0);
+		elseif array_edge_collision[h] == "RIGHT" then
+			next_x = max_x;
+			array_disc_speed_xy[h][1] = array_disc_speed_xy[h][1] * (-1.0);
+		elseif array_edge_collision[h] == "TOP" then
+			next_y = max_y;
+			array_disc_speed_xy[h][2] = array_disc_speed_xy[h][2] * (-1.0);
+		elseif array_edge_collision[h] == "BOTTOM" then
+			next_y = min_y;
+			array_disc_speed_xy[h][2] = array_disc_speed_xy[h][2] * (-1.0);
+		else
+		end;
+
+		### SET COORDINATES BASED ON IMPENDING COLLISION WITH ANOTHER DISC OR CENTRE SQUARE
+
+		if array_disc_collision[h][1] == true then
+			
+			# adjust x axis
+			double x_smallest_distance;
+			# obtain smallest distance to a collision on x axis
+			loop int j = 1 until j > array_closest_noncolliding_x[h].count()
+			begin
+				if j == 1 then
+					x_smallest_distance = array_closest_noncolliding_x[h][j]
+				elseif array_closest_noncolliding_x[h][j] == 0 then
+					# do nothing
+				elseif array_closest_noncolliding_x[h][j] < x_smallest_distance then
+					x_smallest_distance = array_closest_noncolliding_x[h][j]
+				else
+				end;
+				j = j + 1;
+			end;
+			
+			next_x = x_smallest_distance;
+			array_disc_speed_xy[h][1] = array_disc_speed_xy[h][1] * (-1.0);
+		else
+		end;
+		
+		if array_disc_collision[h][2] == true then
+			# adjust y axis
+
+			double y_smallest_distance;
+			# obtain smallest distance to a collision on y axis
+			loop int j = 1 until j > array_closest_noncolliding_y[h].count()
+			begin
+				if j == 1 then
+					y_smallest_distance = array_closest_noncolliding_y[h][j]
+				elseif array_closest_noncolliding_y[h][j] == 0 then
+					# do nothing
+				elseif array_closest_noncolliding_y[h][j] < y_smallest_distance then
+					y_smallest_distance = array_closest_noncolliding_y[h][j]
+				else
+				end;
+				j = j + 1;
+			end;
+			
+			next_y = y_smallest_distance;
+			array_disc_speed_xy[h][2] = array_disc_speed_xy[h][2] * (-1.0);
+		
+		else
+		end;
+		
+		array_disc_current_xy[h][1] = next_x;
+		array_disc_current_xy[h][2] = next_y;
+		pic1.set_part_x( h, array_disc_current_xy[h][1] );
+		pic1.set_part_y( h, array_disc_current_xy[h][2] );
+		h = h + 1;		
+			
+	end;
+
+	#^^ DISC LOCATIONS UPDATED, TRAJECTORIES UPDATED ^^#
+	#################################################################################################################
+
+	# IS MOUSE OVER THE MAIN DISC?
+	
+	double disc_distance_x = abs(mse.x_position() - pic1.get_part_x(1));
+	double disc_distance_y = abs(mse.y_position() - pic1.get_part_y(1));
+	double disc_distance_h = sqrt( ( disc_distance_x * disc_distance_x ) + ( disc_distance_y * disc_distance_y ) );
+
+	if disc_distance_h > disc1.width()/2 then
+		mouse_on_target_disc = false;
+		if trial_state == "TRIAL ACTIVE" then
+			frames_outside_disc = frames_outside_disc + 1;
+			frame_count = frame_count + 1;
+		else
+		end;
+	else
+		mouse_on_target_disc = true;
+		if trial_state == "TRIAL ACTIVE" then
+			frames_inside_disc = frames_inside_disc + 1;
+			frame_count = frame_count + 1;
+		else
+		end;
+	end;
+
+	# Adjust disc color as needed
+	if trial_type[block] == "tracking threshold" && mouse_on_target_disc == true then
+		disc1.set_color( 0, 255, 0, 255 );
+	elseif trial_type[block] == "tracking threshold" && mouse_on_target_disc == false then
+		disc1.set_color( 255, 0, 0, 255 );
+	elseif trial_type[block] == "tracking task" || trial_type[block] == "dual task" then
+		disc1.set_color( 255, 255, 255, 255 );
+	else
+		disc1.set_color( 0, 0, 0, 0 );
+	end;
+	disc1.redraw();
+	
+	#debug1.set_caption( trial_state, true );
+	if frame_count == 0 then #nothing
+		tracking_accuracy = 0
+	else
+	tracking_accuracy = double(frames_inside_disc)/double(frame_count)*100;
+	end;
+
+
+end;

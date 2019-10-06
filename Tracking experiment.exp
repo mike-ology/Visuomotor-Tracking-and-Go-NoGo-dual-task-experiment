@@ -48,6 +48,7 @@
 <filename>D:\Personal\OneDrive\University\A. Current Projects\Trajectory Task\Tracking scenario.sce</filename>
 <filename>D:\Personal\OneDrive\University\A. Current Projects\Trajectory Task\sub_collision_check.pcl</filename>
 <filename>D:\Personal\OneDrive\University\A. Current Projects\Trajectory Task\sub_disc_task_pcl_part.pcl</filename>
+<filename>D:\Personal\OneDrive\University\A. Current Projects\Trajectory Task\sub_generate_prompt.pcl</filename>
 </efs>
 <exclusive_mouse>1</exclusive_mouse>
 <exp_version>0.1.0</exp_version>
@@ -156,7 +157,25 @@
 <out_encrypt_key></out_encrypt_key>
 <pi_list></pi_list>
 <plat>1</plat>
-<port_devices></port_devices>
+<port_devices>
+<device>
+<parameters>
+<cts>0</cts>
+<dsrin>0</dsrin>
+<dsrout>0</dsrout>
+<dtr>disable</dtr>
+<rts>disable</rts>
+<set_fifo>1</set_fifo>
+<spd></spd>
+<spp></spp>
+<spr></spr>
+<sps></sps>
+</parameters>
+<piai>COM4</piai>
+<pian>Serial Port</pian>
+<pihpn>COM4</pihpn>
+</device>
+</port_devices>
 <rdl>
 <device>
 <abs_axis>
@@ -204,6 +223,53 @@
 <device_type>3</device_type>
 <dx_device_type>19</dx_device_type>
 <name>Keyboard</name>
+</device>
+<device>
+<device_type>3</device_type>
+<dx_device_type>0</dx_device_type>
+<name>spacedesk Keyboard</name>
+</device>
+<device>
+<abs_axis>
+<dead_zone>0</dead_zone>
+<max>1000</max>
+<min>-1000</min>
+<name>X-axis</name>
+<saturation>1</saturation>
+</abs_axis>
+<abs_axis>
+<dead_zone>0</dead_zone>
+<max>1000</max>
+<min>-1000</min>
+<name>Y-axis</name>
+<saturation>1</saturation>
+</abs_axis>
+<axis>
+<max>1000</max>
+<min>-1000</min>
+<name>X-axis</name>
+<restricted>1</restricted>
+<scale>1</scale>
+</axis>
+<axis>
+<max>1000</max>
+<min>-1000</min>
+<name>Y-axis</name>
+<restricted>1</restricted>
+<scale>1</scale>
+</axis>
+<axis>
+<max>1000</max>
+<min>-1000</min>
+<name>Wheel</name>
+<restricted>1</restricted>
+<scale>1</scale>
+</axis>
+<device_type>2</device_type>
+<dx_device_type>0</dx_device_type>
+<max_raw_pos>65535</max_raw_pos>
+<min_raw_pos>0</min_raw_pos>
+<name>spacedesk Mouse</name>
 </device>
 <device>
 <device_type>3</device_type>

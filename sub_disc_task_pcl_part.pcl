@@ -23,17 +23,18 @@ begin
 		elseif trial_state == "COUNTDOWN" && run_tracking_initialisation == true then
 		
 			# set disc spped to starting speed
-			if trial_type[block] == "tracking threshold" || trial_type[block] == "tracking task" || trial_type[block] == "dual task" then
+			if trial_type[section] == "tracking threshold" || trial_type[section] == "tracking task" || trial_type[section] == "dual task" then
 						array_disc_speed_xy[h][1] = speed_x * (tracking_staircase_percentages[current_tracking_level]/100);
 						array_disc_speed_xy[h][2] = speed_y * (tracking_staircase_percentages[current_tracking_level]/100);
 			else
+						# keep speed at 0 to reduce collision detection processing
+						array_disc_speed_xy[h][1] = 0;
+						array_disc_speed_xy[h][2] = 0;
 			end;
 
 		else		
 		end;
 
-
-		
 		array_disc_check_xy[h][1] = array_disc_current_xy[h][1] + array_disc_speed_xy[h][1];
 		array_disc_check_xy[h][2] = array_disc_current_xy[h][2] + array_disc_speed_xy[h][2];
 		array_disc_collision[h][1] = false;
@@ -174,11 +175,11 @@ begin
 	end;
 
 	# Adjust disc color as needed
-	if trial_type[block] == "tracking threshold" && mouse_on_target_disc == true then
+	if trial_type[section] == "tracking threshold" && mouse_on_target_disc == true then
 		disc1.set_color( 0, 255, 0, 255 );
-	elseif trial_type[block] == "tracking threshold" && mouse_on_target_disc == false then
+	elseif trial_type[section] == "tracking threshold" && mouse_on_target_disc == false then
 		disc1.set_color( 255, 0, 0, 255 );
-	elseif trial_type[block] == "tracking task" || trial_type[block] == "dual task" then
+	elseif trial_type[section] == "tracking task" || trial_type[section] == "dual task" then
 		disc1.set_color( 255, 255, 255, 255 );
 	else
 		disc1.set_color( 0, 0, 0, 0 );

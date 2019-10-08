@@ -1,7 +1,7 @@
 # HEADER #
 
 scenario = "Tracking";
-active_buttons = 4;
+active_buttons = 7;
 response_logging = log_active;
 no_logfile = true; # default logfile not created
 response_matching = legacy_matching;
@@ -14,7 +14,7 @@ default_formatted_text = true;
 
 begin;
 
-$disc_size = 150;
+$disc_size = 100;
 
 array {
 		ellipse_graphic {
@@ -156,14 +156,14 @@ trial {
 			caption = "DEBUG1:";
 			font_color = 255, 255, 255;
 			text_align = align_left;
-			font_size = 40;
+			font_size = 20;
 			background_color = 0, 0, 0, 0;
 		}debug1;
-		left_x = -900; y = 300;
+		left_x = -900; top_y = 500;
 		on_top = true;
 
 		text {
-			caption = "DEBUG2:";
+			caption = " ";
 			font_color = 128, 255, 255;
 			text_align = align_left;
 			font_size = 40;
@@ -173,7 +173,7 @@ trial {
 		on_top = true;
 
 		text {
-			caption = "DEBUG3:";
+			caption = " ";
 			font_color = 128, 255, 255;
 			text_align = align_left;
 			font_size = 40;
@@ -189,38 +189,10 @@ trial {
 	
 }trial1;
 
-trial {
-	trial_type = specific_response;
-	terminator_button = 1;
-	trial_duration = forever;
-	all_responses = false;
-	stimulus_event {
-		picture {
-			text {
-				caption = "Last run accuracy: XX%";
-			} text_accuracy;
-			x = 0; y = 300;
-			text {
-				caption = "Current level: XX/49";
-			} text_level;
-			x = 0; y = 200;
-			text {
-				caption = "Target for next trial is:";
-			} ;
-			x = 0; y = 75;
-			text {
-				caption = "Press SPACEBAR to go to the next trial, and click the circle to initiate it";
-			} text_proceed;
-			x = 0; y = -300;
-			bitmap bitmap1;
-			x = 0; y = 0;
-		}message_pic;
-		response_active = true;
-		target_button = 1;
-	};
-}message_trial;
-	
 begin_pcl;
+
+bool debug_mode = true;
+bool draw_other_discs = false;
 
 double req_screen_x = 1920.0;
 double req_screen_y = 1080.0;
@@ -254,6 +226,7 @@ int last_response;
 bool new_response = false;
 int trial_count_max;
 double trial_duration;
+bool skip_level_adjustment = false;
 
 # initialise disc task parameters and variables
 
@@ -308,8 +281,8 @@ bool mouse_on_target_disc;
 
 # initialised shape task parameters and variables
 
-array <double> array_shape_threshold_intervals [8] = { 2.0, 2.5, 3.0 };
-array <int> array_shape_target_present [8] = { 1, 1, 1, 1, 0, 0, 0, 0 };
+array <double> array_shape_threshold_intervals [0];
+array <int> array_shape_target_present [0];
 array <int> array_shape_pointers [12] = { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12 };
 
 array <double> array_shape_staircase_percentages [49] = { 222.22,216.67,211.11,205.56,200.00,194.44,188.89,183.33,177.78,172.22,166.67,
@@ -395,8 +368,6 @@ begin
 		double time_shape_expires = 0;
 		double time_shape_feedback_ends = 0;
 		string shape_task_state;
-		array_shape_threshold_intervals.shuffle();
-		array_shape_target_present.shuffle();
 		array_shape_pointers.shuffle();
 		array <int> array_shape_trial_accuracy [0];
 		array <int> array_shape_trial_accuracy_t_present [0];
@@ -420,7 +391,7 @@ begin
 				"On the next trial, the disc's speed will be " + disc_speed_description, true );
 
 		elseif trial_type[section] == "shape threshold" && trial_count == 1 then
-			prompt_message.set_caption( " - NEXT TRIAL -\n" +
+			prompt_message.set_caption( " - NEXT TRIAL -\n\n" +
 				"<font color='255, 255, 0'>THE TARGET FOR THE NEXT TRIAL IS:</font>\n\n\n\n" + 
 				"Target task accuracy is: 78.5% to 82.5%\n" +
 				"Maximum reaction time allowed: " + string( round(baseline_shape_duration * array_shape_staircase_percentages[current_shape_level]/100.0,0)) + "ms", true );
@@ -428,8 +399,8 @@ begin
 
 		elseif trial_type[section] == "shape threshold" && trial_count != 1 then
 			prompt_message.set_caption( "-PREVIOUS TRIAL -\n" +
-				"Percentage shapes correctly responded to was: " + string(round(shape_trial_accuracy*100.0,2)) + "%\n" +
-				"Targets hit: " + string(round(shape_trial_targets_hit*100.0,2)) + "%; Distractors ignored: " + string(round(shape_trial_correct_rej*100.0,2)) + "%\n\n\n" +
+				"Percentage shapes correctly responded to was: " + string(round(shape_trial_accuracy,2)) + "%\n" +
+				"Targets hit: " + string(round(shape_trial_targets_hit,2)) + "%; Distractors ignored: " + string(round(shape_trial_correct_rej,2)) + "%\n\n\n" +
 				" - NEXT TRIAL -\n" +
 				"<font color='255, 255, 0'>THE TARGET FOR THE NEXT TRIAL IS:</font>\n\n\n\n\n" + 
 				"Target task accuracy is: 78.5% to 82.5%\n" +
@@ -577,6 +548,8 @@ begin
 						i = i + 1;
 					end;
 
+					array_shape_threshold_intervals.shuffle();
+					array_shape_target_present.shuffle();
 					run_shape_initialisation = false;
 			else
 			end;
@@ -647,20 +620,46 @@ begin
 			else
 			end;
 			
+			int debug_time_remaining = int((trial_end_time - clock.time_double() ))/1000;
+			if debug_time_remaining < 0 then debug_time_remaining = 0; else end;
+			
+			int debug_section_count = current_test_block_part;
+			int debug_section_count_max;
 
-
-			debug2.set_caption( "Frames inside: " + string(frames_inside_disc) +
-				"\nTotal Frames: " + string(frame_count) +
-				"\nAccuracy: " + string(round(tracking_accuracy,2)) +
-				"\nLevel: " + string(current_tracking_level) +
-				"\nTime Remaining: " + string( int((trial_end_time - clock.time_double() ))/1000 ) +
-				"\nBL prop.speed: " + string(tracking_staircase_percentages [current_tracking_level]) +
-				"\n" +
-				"\nLast shape RT: " + string(int(round(last_shape_RT,1))), true );
-
+			if block == 3 then
+				debug_section_count_max = array_test_block_sections.count()
+			else
+				debug_section_count_max = 1;
+			end;
+			
+			int debug_last_shape_accurate;
+			if array_shape_trial_accuracy.count() == 0 then
+				debug_last_shape_accurate = -1
+			else
+				debug_last_shape_accurate = array_shape_trial_accuracy[array_shape_trial_accuracy.count()]
+			end;
+			
+			if debug_mode == true then
+				debug1.set_caption( "Block: " + string(block) + "/3\n" +
+					"Section: " + string(current_test_block_part) + "/" + string(debug_section_count_max) + "\n" +
+					"Current task: " + trial_type[section] + "\n" +
+					"Trial: " + string(trial_count) + "/" + string(trial_count_max) + "\n" +
+					"Time Remaining: " + string(debug_time_remaining) + "\n\n" +
+					"Tracking task level: " + string(current_tracking_level) + "/49\n" + 
+					"Shape task level: " + string(current_shape_level) + "/49\n\n" +
+					"Frames inside: " + string(frames_inside_disc) + "\n" +
+					"Total Frames: " + string(frame_count) + "\n\n" +
+					"Last shape trial accurate: " + string(debug_last_shape_accurate) + "\n" +
+					"Last shape reaction time: " + string(round(last_shape_RT,0)) + "\n\n" +
+					"[T] Increment trial counter\n" + 
+					"[R] Reset trial\n" + 
+					"[N] End trial, go to next" +
+					"[D] Show/Hide other discs", true );
+				elseif debug_mode == false then
+					debug1.set_caption(" ", true);
+				end;
 
 			# # # # # # #
-
 
 			# PRESENT FRAME
 
@@ -676,7 +675,40 @@ begin
 				last_response = 0;
 				#debug1.set_caption("Response count: " + string(response_count), true);
 			end;
-				
+			
+			if last_response == 3 && debug_mode == true  then
+				trial_count = trial_count + 1;
+				last_response = 0;
+			elseif last_response == 4 && debug_mode == true  then
+				trial_end_time = clock.time_double();
+				trial_count = trial_count - 1;
+				skip_level_adjustment = true;
+				last_response = 0;
+			elseif last_response == 5 && debug_mode == true  then
+				trial_end_time = clock.time_double();
+				last_response = 0;
+			elseif last_response == 6 && debug_mode == true then
+				debug_mode = false;
+				last_response = 0;
+			elseif last_response == 6 && debug_mode == false then
+				debug_mode = true;
+				last_response = 0;
+			elseif last_response == 7 && debug_mode == true && draw_other_discs == false then
+				disc2.set_color( 128, 128, 128, 255 );
+				disc2.redraw();
+				disc3.set_color( 128, 128, 128, 255 );
+				disc3.redraw();
+				draw_other_discs = true;
+				last_response = 0;
+			elseif last_response == 7 && debug_mode == true && draw_other_discs == true then
+				disc2.set_color( 0, 0, 0, 0 );
+				disc2.redraw();
+				disc3.set_color( 0, 0, 0, 0 );
+				disc3.redraw();
+				draw_other_discs = false;
+				last_response = 0;
+			end;
+			
 			# CHECK IF TRIAL HAS EXPIRED
 
 			if clock.time_double() > trial_end_time && trial_end_time != 0 then
@@ -689,71 +721,79 @@ begin
 		#########################################################################################
 		#########################################################################################
 		
-		# calculate how far accuracy differs from target band
-		
-		int tracking_level_change;
-		int shape_level_change;
-		shape_trial_accuracy = arithmetic_mean( array_shape_trial_accuracy );
-		shape_trial_targets_hit = arithmetic_mean( array_shape_trial_accuracy );
-		shape_trial_correct_rej = arithmetic_mean( array_shape_trial_accuracy );
-		
-		if tracking_accuracy < tracking_target_min_accuracy then
-			# accuracy too low
-			disc_speed_description = "SLOWER";
-			tracking_level_change = -(int(( tracking_target_min_accuracy - tracking_accuracy ) / 1.75) + 1);
-		elseif tracking_accuracy > tracking_target_max_accuracy then
-			# accuracy too high
-			disc_speed_description = "FASTER";
-			tracking_level_change = int( abs( tracking_target_max_accuracy - tracking_accuracy ) / 1.75) + 1;
+		if skip_level_adjustment == true then
+			# trial was reset, difficulty parameters are kept the same
+			skip_level_adjustment == false; # reset
+
 		else
-			# accuracy okay
-			disc_speed_description = "THE SAME";
-			tracking_level_change = 0;
-		end;
-
-		if shape_trial_accuracy < shape_target_min_accuracy then
-			# accuracy too low
-			shape_speed_description = "SLOWER";
-			shape_level_change = -(int(( shape_target_min_accuracy - shape_trial_accuracy ) / 1.75) + 1);
-		elseif shape_trial_accuracy > shape_target_max_accuracy then
-			# accuracy too high
-			shape_speed_description = "FASTER";
-			shape_level_change = int( abs( shape_target_max_accuracy - shape_trial_accuracy ) / 1.75) + 1;
-		else
-			# accuracy okay
-			shape_speed_description = "AT THE SAME SPEED";
-			shape_level_change = 0;
-		end;
-
-
-		# adjust difficulty level for next trial (but don't adjust if outside threshold procedures
+		
+			# calculate how far accuracy differs from target band
 			
-		if trial_type[section] == "tracking threshold" then
-			current_tracking_level = current_tracking_level + tracking_level_change;
-		else
-		end;
+			int tracking_level_change;
+			int shape_level_change;
+			shape_trial_accuracy = arithmetic_mean( array_shape_trial_accuracy ) * 100;
+			shape_trial_targets_hit = arithmetic_mean( array_shape_trial_accuracy ) * 100;
+			shape_trial_correct_rej = arithmetic_mean( array_shape_trial_accuracy ) * 100;
+			
+			if tracking_accuracy < tracking_target_min_accuracy then
+				# accuracy too low
+				disc_speed_description = "SLOWER";
+				tracking_level_change = -(int(( tracking_target_min_accuracy - tracking_accuracy ) / 1.75) + 1);
+			elseif tracking_accuracy > tracking_target_max_accuracy then
+				# accuracy too high
+				disc_speed_description = "FASTER";
+				tracking_level_change = int( abs( tracking_target_max_accuracy - tracking_accuracy ) / 1.75) + 1;
+			else
+				# accuracy okay
+				disc_speed_description = "THE SAME";
+				tracking_level_change = 0;
+			end;
 
-		if trial_type[section] == "shape threshold" then
-			current_shape_level = current_shape_level + shape_level_change;
-		else
-		end;
-	
-		# keep within level limits
+			if shape_trial_accuracy < shape_target_min_accuracy then
+				# accuracy too low
+				shape_speed_description = "SLOWER";
+				shape_level_change = -(int(( shape_target_min_accuracy - shape_trial_accuracy ) / 1.75) + 1);
+			elseif shape_trial_accuracy > shape_target_max_accuracy then
+				# accuracy too high
+				shape_speed_description = "FASTER";
+				shape_level_change = int( abs( shape_target_max_accuracy - shape_trial_accuracy ) / 1.75) + 1;
+			else
+				# accuracy okay
+				shape_speed_description = "AT THE SAME SPEED";
+				shape_level_change = 0;
+			end;
+			
 
-		if current_tracking_level < 1 then
-			current_tracking_level = 1
-		elseif current_tracking_level > tracking_staircase_percentages.count() then
-			current_tracking_level = tracking_staircase_percentages.count()
-		else
-		end;
+			# adjust difficulty level for next trial (but don't adjust if outside threshold procedures
+				
+			if trial_type[section] == "tracking threshold" then
+				current_tracking_level = current_tracking_level + tracking_level_change;
+			else
+			end;
+
+			if trial_type[section] == "shape threshold" then
+				current_shape_level = current_shape_level + shape_level_change;
+			else
+			end;
 		
-		if current_shape_level < 1 then
-			current_shape_level = 1
-		elseif current_shape_level > array_shape_staircase_percentages.count() then
-			current_shape_level = array_shape_staircase_percentages.count()
-		else
-		end;
+			# keep within level limits
 
+			if current_tracking_level < 1 then
+				current_tracking_level = 1
+			elseif current_tracking_level > tracking_staircase_percentages.count() then
+				current_tracking_level = tracking_staircase_percentages.count()
+			else
+			end;
+			
+			if current_shape_level < 1 then
+				current_shape_level = 1
+			elseif current_shape_level > array_shape_staircase_percentages.count() then
+				current_shape_level = array_shape_staircase_percentages.count()
+			else
+			end;
+		
+		end; # ENDIF
+	
 		# # # # #
 		
 		trial_count = trial_count + 1;

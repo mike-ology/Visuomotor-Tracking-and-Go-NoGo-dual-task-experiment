@@ -1,5 +1,5 @@
 <ver>21.1</ver>
-<efn>D:\Personal\OneDrive\University\A. Current Projects\Trajectory Task\Tracking experiment.exp</efn>
+<efn>C:\Users\Michael\OneDrive\University\A. Current Projects\Trajectory Task\Tracking experiment.exp</efn>
 <author>MCWE</author>
 <con>
 <pause>None</pause>
@@ -30,25 +30,25 @@
 <depchg>1</depchg>
 <discard_windows_messages>0</discard_windows_messages>
 <display_status_window>1</display_status_window>
-<dmd>32</dmd>
-<dmh>1080</dmh>
-<dmr>60</dmr>
-<dmrf>60</dmrf>
-<dmw>1920</dmw>
+<dmd>0</dmd>
+<dmh>0</dmh>
+<dmr>1</dmr>
+<dmrf>1</dmrf>
+<dmw>0</dmw>
 <docs>
 <args></args>
 <exfl></exfl>
 <lfn></lfn>
 </docs>
 <dp_list></dp_list>
-<dsd>D:\Personal\OneDrive\University\A. Current Projects\Trajectory Task\Stimuli</dsd>
+<dsd>C:\Users\Michael\OneDrive\University\A. Current Projects\Trajectory Task\Stimuli</dsd>
 <dwm>0</dwm>
 <dxv>8</dxv>
 <efs>
-<filename>D:\Personal\OneDrive\University\A. Current Projects\Trajectory Task\Tracking scenario.sce</filename>
-<filename>D:\Personal\OneDrive\University\A. Current Projects\Trajectory Task\sub_collision_check.pcl</filename>
-<filename>D:\Personal\OneDrive\University\A. Current Projects\Trajectory Task\sub_disc_task_pcl_part.pcl</filename>
-<filename>D:\Personal\OneDrive\University\A. Current Projects\Trajectory Task\sub_generate_prompt.pcl</filename>
+<filename>C:\Users\Michael\OneDrive\University\A. Current Projects\Trajectory Task\Tracking scenario.sce</filename>
+<filename>C:\Users\Michael\OneDrive\University\A. Current Projects\Trajectory Task\sub_collision_check.pcl</filename>
+<filename>C:\Users\Michael\OneDrive\University\A. Current Projects\Trajectory Task\sub_disc_task_pcl_part.pcl</filename>
+<filename>C:\Users\Michael\OneDrive\University\A. Current Projects\Trajectory Task\sub_generate_prompt.pcl</filename>
 </efs>
 <exclusive_mouse>1</exclusive_mouse>
 <exp_version>0.1.0</exp_version>
@@ -123,7 +123,7 @@
 <idt>0</idt>
 <ilc>0</ilc>
 <ip_chans></ip_chans>
-<lfd>D:\Personal\OneDrive\University\A. Current Projects\Trajectory Task</lfd>
+<lfd>C:\Users\Michael\OneDrive\University\A. Current Projects\Trajectory Task</lfd>
 <lnb>2</lnb>
 <lno>4</lno>
 <log>
@@ -157,25 +157,7 @@
 <out_encrypt_key></out_encrypt_key>
 <pi_list></pi_list>
 <plat>1</plat>
-<port_devices>
-<device>
-<parameters>
-<cts>0</cts>
-<dsrin>0</dsrin>
-<dsrout>0</dsrout>
-<dtr>disable</dtr>
-<rts>disable</rts>
-<set_fifo>1</set_fifo>
-<spd></spd>
-<spp></spp>
-<spr></spr>
-<sps></sps>
-</parameters>
-<piai>COM4</piai>
-<pian>Serial Port</pian>
-<pihpn>COM4</pihpn>
-</device>
-</port_devices>
+<port_devices></port_devices>
 <rdl>
 <device>
 <abs_axis>
@@ -227,7 +209,12 @@
 <device>
 <device_type>3</device_type>
 <dx_device_type>0</dx_device_type>
-<name>spacedesk Keyboard</name>
+<name>HID Keyboard Device</name>
+</device>
+<device>
+<device_type>3</device_type>
+<dx_device_type>0</dx_device_type>
+<name>Standard 101/102-Key or Microsoft Natural PS/2 Keyboard for HP Hotkey Support</name>
 </device>
 <device>
 <abs_axis>
@@ -269,12 +256,7 @@
 <dx_device_type>0</dx_device_type>
 <max_raw_pos>65535</max_raw_pos>
 <min_raw_pos>0</min_raw_pos>
-<name>spacedesk Mouse</name>
-</device>
-<device>
-<device_type>3</device_type>
-<dx_device_type>0</dx_device_type>
-<name>HID Keyboard Device</name>
+<name>Synaptics HID ClickPad</name>
 </device>
 <device>
 <abs_axis>
@@ -319,14 +301,61 @@
 <name>HID-compliant mouse</name>
 </device>
 <device>
-<device_type>4</device_type>
-<dx_device_type>17</dx_device_type>
-<name>Dell KB216 Wired Keyboard</name>
+<abs_axis>
+<dead_zone>0</dead_zone>
+<max>1000</max>
+<min>-1000</min>
+<name>X-axis</name>
+<saturation>1</saturation>
+</abs_axis>
+<abs_axis>
+<dead_zone>0</dead_zone>
+<max>1000</max>
+<min>-1000</min>
+<name>Y-axis</name>
+<saturation>1</saturation>
+</abs_axis>
+<axis>
+<max>1000</max>
+<min>-1000</min>
+<name>X-axis</name>
+<restricted>1</restricted>
+<scale>1</scale>
+</axis>
+<axis>
+<max>1000</max>
+<min>-1000</min>
+<name>Y-axis</name>
+<restricted>1</restricted>
+<scale>1</scale>
+</axis>
+<axis>
+<max>1000</max>
+<min>-1000</min>
+<name>Wheel</name>
+<restricted>1</restricted>
+<scale>1</scale>
+</axis>
+<device_type>2</device_type>
+<dx_device_type>0</dx_device_type>
+<max_raw_pos>65535</max_raw_pos>
+<min_raw_pos>0</min_raw_pos>
+<name>PS/2 Compatible Mouse</name>
 </device>
 <device>
 <device_type>4</device_type>
 <dx_device_type>17</dx_device_type>
-<name>Dell KB216 Wired Keyboard 1</name>
+<name>HP Wireless Button Driver</name>
+</device>
+<device>
+<device_type>4</device_type>
+<dx_device_type>17</dx_device_type>
+<name>Micr</name>
+</device>
+<device>
+<device_type>4</device_type>
+<dx_device_type>17</dx_device_type>
+<name>Micr 1</name>
 </device>
 <device>
 <axis>
@@ -657,18 +686,30 @@
 <device_type>3</device_type>
 <dx_device_type>19</dx_device_type>
 <ibn>Space</ibn>
-<ibn>P</ibn>
+<ibn>T</ibn>
 <ibn>R</ibn>
+<ibn>N</ibn>
+<ibn>`</ibn>
+<ibn>D</ibn>
 <idn>Keyboard</idn>
 <index>0</index>
 <index>2</index>
 <index>3</index>
+<index>4</index>
+<index>5</index>
+<index>6</index>
+<label></label>
+<label></label>
+<label></label>
 <label></label>
 <label></label>
 <label></label>
 <offset>57</offset>
-<offset>25</offset>
+<offset>20</offset>
 <offset>19</offset>
+<offset>49</offset>
+<offset>41</offset>
+<offset>32</offset>
 </abd>
 <abd>
 <device_type>2</device_type>
@@ -685,7 +726,7 @@
 <name>Mouse</name>
 </mse>
 <overrides></overrides>
-<sfn>D:\Personal\OneDrive\University\A. Current Projects\Trajectory Task\Tracking scenario.sce</sfn>
+<sfn>C:\Users\Michael\OneDrive\University\A. Current Projects\Trajectory Task\Tracking scenario.sce</sfn>
 </sce>
 <sct>
 <capture_device>

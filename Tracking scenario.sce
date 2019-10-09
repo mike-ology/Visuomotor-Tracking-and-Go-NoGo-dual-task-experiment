@@ -207,23 +207,116 @@ mse.set_restricted( 2, true );
 mse.set_pos( 1, 0 ); 
 mse.set_pos( 2, 0 );
 
-#double last_mse_x = 0;
-#double last_ms_y = 0;
-
 # initialise general trial parameters and variables
 
-array <string> trial_type [5] = { "tracking threshold", "shape threshold", "tracking task", "shape task", "dual task" };
+int phase = 1;
+string training_type = "single";
+int section;
+int max_sections;
+array <int> array_section_trials [2][0];
+array <int> array_trials_per_task [0];
+array <int> array_tracking_trial_length [0];
+array <int> array_shape_trial_length [0];
+array <int> array_dual_trial_length [0];
+
+if phase == 1 then
+
+	max_sections = 2;
+	array_trials_per_task.assign( { 9, 5 } );
+	array_tracking_trial_length.assign( { 60, 180 } );
+	array_shape_trial_length.assign( { 120, 180 } );
+	array_dual_trial_length.assign( { 0, 180 } );
+
+	loop
+		int i = 1
+	until
+		i > array_trials_per_task[1]
+	begin
+		array_section_trials[1].add( 1 );
+		array_section_trials[1].add( 2 );
+		i = i + 1;
+	end;
+
+	loop
+		int i = 1
+	until
+		i > array_trials_per_task[2]
+	begin
+		array_section_trials[2].add( 1 );
+		array_section_trials[2].add( 2 );
+		array_section_trials[2].add( 3 );
+		i = i + 1;
+	end;
+	
+	term.print_line( array_section_trials );
+	
+elseif phase == 2 && training_type == "single" then
+
+	max_sections = 1;
+	array_trials_per_task.assign( { 6 } );
+	array_tracking_trial_length.assign( { 180 } );
+	array_shape_trial_length.assign( { 180 } );
+	array_dual_trial_length.assign( { 0 } );
+
+	loop
+		int i = 1
+	until
+		i > array_trials_per_task[1]
+	begin
+		array_section_trials[1].add( 1 );
+		array_section_trials[1].add( 2 );
+		i = i + 1;
+	end;
+
+elseif phase == 2 && training_type == "dual" then
+
+	max_sections = 1;
+	array_trials_per_task.assign( { 12 } );
+	array_tracking_trial_length.assign( { 0 } );
+	array_shape_trial_length.assign( { 0 } );
+	array_dual_trial_length.assign( { 180 } );
+
+	loop
+		int i = 1
+	until
+		i > array_trials_per_task[1]
+	begin
+		array_section_trials[1].add( 3 );
+		i = i + 1;
+	end;
+
+elseif phase == 3 then
+
+	max_sections = 1;
+	array_trials_per_task.assign( { 5 } );
+	array_tracking_trial_length.assign( { 180 } );
+	array_shape_trial_length.assign( { 180 } );
+	array_dual_trial_length.assign( { 180 } );
+
+	loop
+		int i = 1
+	until
+		i > array_trials_per_task[1]
+	begin
+		array_section_trials[1].add( 1 );
+		array_section_trials[1].add( 2 );
+		array_section_trials[1].add( 3 );
+		i = i + 1;
+	end;
+
+else
+	term.print_line( "INVALID EXPERIMENT SETUP" );
+
+end;
 
 string trial_state;
 bool run_trial_initialisation;
 bool run_tracking_initialisation;
 bool run_shape_initialisation;
-int block;
-int section;
-array <int> array_test_block_sections [0];
 int frame_count;
 int last_response;
 bool new_response = false;
+int trial_count;
 int trial_count_max;
 double trial_duration;
 bool skip_level_adjustment = false;
@@ -295,13 +388,10 @@ int baseline_shape_duration = 450;
 int baseline_shape_level = 29;
 int current_shape_level = baseline_shape_level;
 int final_shape_level;
-int shape_mini_trials;
+double shape_mini_trials;
 double shape_trial_accuracy;
 double shape_trial_targets_hit;
 double shape_trial_correct_rej;
-
-array_test_block_sections.assign( {3, 4, 5, 3, 4, 5}  );
-int current_test_block_part = 1;
 
 # # # #
 
@@ -314,37 +404,15 @@ include "sub_disc_task_pcl_part.pcl";
 ################
 
 loop
-	block = 1
+	section = 1
 until
-	block > 3
+	section > max_sections
 begin
 	
-	if block == 1 then
-		section = 1
-	elseif block == 2 then
-		section = 2
-	elseif block == 3 then
-		section = array_test_block_sections[current_test_block_part];
-	end;
-	
-	if trial_type[section] == "tracking threshold" then
-		trial_count_max = 9;
-		trial_duration = 60000;
-		shape_mini_trials = 0;
-	elseif trial_type[section] == "shape threshold" then
-		trial_count_max = 9;
-		trial_duration = 10000 * 12; #120000
-		shape_mini_trials = 4 * 12; #48
-	elseif trial_type[section] == "tracking task" || trial_type[section] == "shape task" || trial_type[section] == "dual task" then
-		trial_count_max = 1;
-		trial_duration = 10000 * 18; #180000
-		shape_mini_trials = 4 * 18; #72
-	else
-		term.print_line( "BLOCK ERROR" );
-	end;
+	trial_count_max = array_section_trials[section].count();
 
 	loop
-		int trial_count = 1
+		trial_count = 1
 	until
 		trial_count > trial_count_max
 	begin
@@ -375,54 +443,34 @@ begin
 		double last_shape_RT;
 		double time_current_shape;
 		
-		# generate next message
+		# determine next trial
+		if array_section_trials[section][trial_count] == 1 then # tracking
+			trial_duration = array_tracking_trial_length[section] * 1000;
+			shape_mini_trials = 0;
+		elseif array_section_trials[section][trial_count] == 2  then # shape
+			trial_duration = array_shape_trial_length[section] * 1000;
+			shape_mini_trials = array_shape_trial_length[section] / 2.5;
+		elseif ( array_section_trials[section][trial_count] == 3 ) then # dual
+			trial_duration = array_dual_trial_length[section] * 1000;
+			shape_mini_trials = array_dual_trial_length[section] / 2.5 ;
+		else
+			term.print_line( "BLOCK ERROR" );
+		end;
+		
+		# generate pre-trial message
 		
 		create_new_prompt( 1 );
 		
-		if trial_type[section] == "tracking threshold" && trial_count == 1 then
-			prompt_message.set_caption( "- REMEMBER -\n\n" +
-				"Target time spent on disc is: 78.5% to 82.5%", true );
+		if array_section_trials[section][trial_count] == 1 then
+			prompt_message.set_caption( "Next trial is disc task", true );
 
-		elseif trial_type[section] == "tracking threshold" && trial_count != 1 then
-			prompt_message.set_caption( "- PREVIOUS TRIAL -\n\n" +
-				"Percentage time on disc: " + string(round(tracking_accuracy,2)) + "%\n\n\n" +
-				"- NEXT TRIAL -\n\n" +
-				"Target time spent on disc is: 78.5% to 82.5%\n" +
-				"On the next trial, the disc's speed will be " + disc_speed_description, true );
-
-		elseif trial_type[section] == "shape threshold" && trial_count == 1 then
-			prompt_message.set_caption( " - NEXT TRIAL -\n\n" +
-				"<font color='255, 255, 0'>THE TARGET FOR THE NEXT TRIAL IS:</font>\n\n\n\n" + 
-				"Target task accuracy is: 78.5% to 82.5%\n" +
-				"Maximum reaction time allowed: " + string( round(baseline_shape_duration * array_shape_staircase_percentages[current_shape_level]/100.0,0)) + "ms", true );
+		elseif array_section_trials[section][trial_count] == 2 then
+			prompt_message.set_caption( "Next trial is shape task", true );
 			prompt_pic.add_part( array_shapes[array_shape_pointers[1]], 0, 100 );
 
-		elseif trial_type[section] == "shape threshold" && trial_count != 1 then
-			prompt_message.set_caption( "-PREVIOUS TRIAL -\n" +
-				"Percentage shapes correctly responded to was: " + string(round(shape_trial_accuracy,2)) + "%\n" +
-				"Targets hit: " + string(round(shape_trial_targets_hit,2)) + "%; Distractors ignored: " + string(round(shape_trial_correct_rej,2)) + "%\n\n\n" +
-				" - NEXT TRIAL -\n" +
-				"<font color='255, 255, 0'>THE TARGET FOR THE NEXT TRIAL IS:</font>\n\n\n\n\n" + 
-				"Target task accuracy is: 78.5% to 82.5%\n" +
-				"On the next trial, the shapes will disappear " + shape_speed_description + "\n" +
-				"Maximum reaction time allowed: " + string( round(baseline_shape_duration * array_shape_staircase_percentages[current_shape_level]/100.0,0)) + "ms", true );
-			prompt_pic.add_part( array_shapes[array_shape_pointers[1]], 0, 0 );
-
-		elseif trial_type[section] == "tracking task" then
-			prompt_message.set_caption( "The next trial is the tracking task", true );
-		
-		elseif trial_type[section] == "shape task" then
-			prompt_message.set_caption( "<u>The next trial is the shape task</u>\n\n" +
-				"<font color='255, 255, 0'>THE TARGET FOR THE NEXT TRIAL IS:</font>\n\n" , true ); 
-			prompt_pic.add_part( array_shapes[array_shape_pointers[1]], 0, 0 );
-			
-
-		elseif trial_type[section] == "dual task" then
-			prompt_message.set_caption( "The next trial is both the tracking and shape task\nat the <u>same time</u>\n\n" +
-			"<font color='255, 255, 0'>THE TARGET FOR THE SHAPE TASK PART OF THIS TRIAL IS</font>\n\n", true );
-			prompt_pic.add_part( array_shapes[array_shape_pointers[1]], 0, -50 );
-
-			## insert target shape!!!
+		elseif array_section_trials[section][trial_count] == 3 then
+			prompt_message.set_caption( "Next trial is dual task", true );
+			prompt_pic.add_part( array_shapes[array_shape_pointers[1]], 0, 100 );
 
 		else
 		end;
@@ -442,18 +490,14 @@ begin
 
 		### PRE-TRIAL SETUP TRIAL ###
 
-		if trial_type[section] == "tracking threshold" || trial_type[section] == "tracking task"  then
+		if array_section_trials[section][trial_count] == 1 || array_section_trials[section][trial_count] == 3  then
 			mse.set_pos( 1, 0.0 );
 			mse.set_pos( 2, 0.0 );
 			cursor_object.set_caption( "+", true );
-		elseif trial_type[section] == "shape threshold" || trial_type[section] == "shape task" then
+		elseif array_section_trials[section][trial_count] == 2 then
 			mse.set_pos( 1, max_x );
 			mse.set_pos( 2, max_y );
 			cursor_object.set_caption( " ", true );
-		elseif trial_type[section] == "dual task" then
-			mse.set_pos( 1, 0.0 );
-			mse.set_pos( 2, 0.0 );
-			cursor_object.set_caption( "+", true );
 		end;
 		
 		# Set current value for response count. Every registered response will manually increment this value immediatelly follow trial presentation.
@@ -472,19 +516,19 @@ begin
 			
 			### INITIATE TRIAL ###
 
-			if trial_type[section] == "tracking threshold" || trial_type[section] == "tracking task"  then
+			if array_section_trials[section][trial_count] == 1 then
 				if trial_state == "STANDBY" && mouse_on_target_disc == true && last_response == 2 then
 					run_trial_initialisation = true;
 					run_tracking_initialisation = true;
 				else
 				end;
-			elseif trial_type[section] == "shape threshold" || trial_type[section] == "shape task" then
+			elseif array_section_trials[section][trial_count] == 2 then
 				if trial_state == "STANDBY" && last_response == 1 then
 					run_trial_initialisation = true;
 					run_shape_initialisation = true;
 				else
 				end;
-			elseif trial_type[section] == "dual task" then
+			elseif array_section_trials[section][trial_count] == 3 then
 				if trial_state == "STANDBY" && mouse_on_target_disc == true && last_response == 2 then
 					run_trial_initialisation = true;
 					run_tracking_initialisation = true;
@@ -529,7 +573,7 @@ begin
 
 			# Set up initiation
 			if trial_state == "COUNTDOWN" && run_shape_initialisation == true && 
-				( trial_type[section] == "shape threshold" || trial_type[section] == "shape task" || trial_type[section] == "dual task" ) then
+				( array_section_trials[section][trial_count] == 2 || array_section_trials[section][trial_count] == 3 ) then
 					time_present_next_shape = trial_start_time;
 					array_shape_trial_accuracy.resize( 0 );
 					array_shape_threshold_intervals.resize( 0 );
@@ -623,15 +667,6 @@ begin
 			int debug_time_remaining = int((trial_end_time - clock.time_double() ))/1000;
 			if debug_time_remaining < 0 then debug_time_remaining = 0; else end;
 			
-			int debug_section_count = current_test_block_part;
-			int debug_section_count_max;
-
-			if block == 3 then
-				debug_section_count_max = array_test_block_sections.count()
-			else
-				debug_section_count_max = 1;
-			end;
-			
 			int debug_last_shape_accurate;
 			if array_shape_trial_accuracy.count() == 0 then
 				debug_last_shape_accurate = -1
@@ -640,9 +675,9 @@ begin
 			end;
 			
 			if debug_mode == true then
-				debug1.set_caption( "Block: " + string(block) + "/3\n" +
-					"Section: " + string(current_test_block_part) + "/" + string(debug_section_count_max) + "\n" +
-					"Current task: " + trial_type[section] + "\n" +
+				debug1.set_caption( "Phase: " + string(phase) + "\n" +
+					"Section: " + string(section) + "/" + string(max_sections) + "\n" +
+					"Current task: " + string(array_section_trials[section][trial_count]) + "\n" +
 					"Trial: " + string(trial_count) + "/" + string(trial_count_max) + "\n" +
 					"Time Remaining: " + string(debug_time_remaining) + "\n\n" +
 					"Tracking task level: " + string(current_tracking_level) + "/49\n" + 
@@ -653,7 +688,7 @@ begin
 					"Last shape reaction time: " + string(round(last_shape_RT,0)) + "\n\n" +
 					"[T] Increment trial counter\n" + 
 					"[R] Reset trial\n" + 
-					"[N] End trial, go to next" +
+					"[N] End trial, go to next\n" +
 					"[D] Show/Hide other discs", true );
 				elseif debug_mode == false then
 					debug1.set_caption(" ", true);
@@ -670,10 +705,8 @@ begin
 			if response_manager.total_response_count() > response_count then
 				last_response = response_manager.last_response();
 				response_count = response_count + 1;
-				#debug1.set_caption("Response count: " + string(response_count), true);
 			else
 				last_response = 0;
-				#debug1.set_caption("Response count: " + string(response_count), true);
 			end;
 			
 			if last_response == 3 && debug_mode == true  then
@@ -723,14 +756,14 @@ begin
 		
 		if skip_level_adjustment == true then
 			# trial was reset, difficulty parameters are kept the same
-			skip_level_adjustment == false; # reset
+			skip_level_adjustment = false; # reset
 
-		else
+		elseif phase == 1 && section == 1 then
 		
 			# calculate how far accuracy differs from target band
 			
-			int tracking_level_change;
-			int shape_level_change;
+			int tracking_level_change = 0;
+			int shape_level_change = 0;
 			shape_trial_accuracy = arithmetic_mean( array_shape_trial_accuracy ) * 100;
 			shape_trial_targets_hit = arithmetic_mean( array_shape_trial_accuracy ) * 100;
 			shape_trial_correct_rej = arithmetic_mean( array_shape_trial_accuracy ) * 100;
@@ -763,18 +796,10 @@ begin
 				shape_level_change = 0;
 			end;
 			
+			# adjust difficulty level
 
-			# adjust difficulty level for next trial (but don't adjust if outside threshold procedures
-				
-			if trial_type[section] == "tracking threshold" then
-				current_tracking_level = current_tracking_level + tracking_level_change;
-			else
-			end;
-
-			if trial_type[section] == "shape threshold" then
-				current_shape_level = current_shape_level + shape_level_change;
-			else
-			end;
+			current_tracking_level = current_tracking_level + tracking_level_change;
+			current_shape_level = current_shape_level + shape_level_change;
 		
 			# keep within level limits
 
@@ -799,16 +824,6 @@ begin
 		trial_count = trial_count + 1;
 	end;
 	
-	if block == 3 then
-		# in the test block, increment the array that controls which task to run next at the end of each trial
-		current_test_block_part = current_test_block_part + 1;
-		if current_test_block_part > array_test_block_sections.count() then
-			# if the test trial array is exhausted, finally increment block number to end the experiment
-			block = block + 1;
-		else
-		end;
-	else
-		block = block + 1;
-	end;
+	section = section + 1;
 	
 end;

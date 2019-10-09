@@ -23,7 +23,7 @@ begin
 		elseif trial_state == "COUNTDOWN" && run_tracking_initialisation == true then
 		
 			# set disc spped to starting speed
-			if trial_type[section] == "tracking threshold" || trial_type[section] == "tracking task" || trial_type[section] == "dual task" then
+			if array_section_trials[section][trial_count] == 1 || array_section_trials[section][trial_count] == 3 then
 						array_disc_speed_xy[h][1] = speed_x * (tracking_staircase_percentages[current_tracking_level]/100);
 						array_disc_speed_xy[h][2] = speed_y * (tracking_staircase_percentages[current_tracking_level]/100);
 			else
@@ -175,13 +175,13 @@ begin
 	end;
 
 	# Adjust disc color as needed
-	if trial_type[section] == "tracking threshold" && mouse_on_target_disc == true then
+	if ( array_section_trials[section][trial_count] == 1 || array_section_trials[section][trial_count] == 3 ) && phase == 1 && section == 1 && mouse_on_target_disc == true then
 		disc1.set_color( 0, 255, 0, 255 );
-	elseif trial_type[section] == "tracking threshold" && mouse_on_target_disc == false then
+	elseif ( array_section_trials[section][trial_count] == 1 || array_section_trials[section][trial_count] == 3 ) && phase == 1 && section == 1 && mouse_on_target_disc == false then
 		disc1.set_color( 255, 0, 0, 255 );
-	elseif trial_type[section] == "tracking task" || trial_type[section] == "dual task" then
+	elseif ( array_section_trials[section][trial_count] == 1 || array_section_trials[section][trial_count] == 3 ) && ( ( phase == 1 && section == 2 ) || phase == 2 || phase == 3 )  then
 		disc1.set_color( 255, 255, 255, 255 );
-	else
+	elseif array_section_trials[section][trial_count] == 2 then
 		disc1.set_color( 0, 0, 0, 0 );
 	end;
 	disc1.redraw();

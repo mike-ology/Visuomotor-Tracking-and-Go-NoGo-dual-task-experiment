@@ -153,6 +153,25 @@ trial {
 		x = 0; y = 0;
 
 		text {
+			caption = " ";
+			font_size = 36;
+			font_color = 255, 255, 255, 255;
+			background_color = 0, 0, 0, 0;
+		}text_start_trial;
+		x = 0; y = -200;
+
+		text {
+			caption = " ";
+			font_size = 36;
+			font_color = 255, 0, 0, 255;
+			background_color = 0, 0, 0, 0;
+		}text_shape_reminder;
+		x = 0; y = 200;
+		
+		bitmap bitmap1;
+		x = 9999; y = 9999;
+
+		text {
 			caption = "DEBUG1:";
 			font_color = 255, 255, 255;
 			text_align = align_left;
@@ -160,26 +179,6 @@ trial {
 			background_color = 0, 0, 0, 0;
 		}debug1;
 		left_x = -900; top_y = 500;
-		on_top = true;
-
-		text {
-			caption = " ";
-			font_color = 128, 255, 255;
-			text_align = align_left;
-			font_size = 40;
-			background_color = 0, 0, 0, 0;
-		}debug2;
-		left_x = -900; y = -300;
-		on_top = true;
-
-		text {
-			caption = " ";
-			font_color = 128, 255, 255;
-			text_align = align_left;
-			font_size = 40;
-			background_color = 0, 0, 0, 0;
-		}debug3;
-		left_x = -900; y = 200;
 		on_top = true;
 
 	}pic1;
@@ -247,8 +246,6 @@ if phase == 1 then
 		array_section_trials[2].add( 3 );
 		i = i + 1;
 	end;
-	
-	term.print_line( array_section_trials );
 	
 elseif phase == 2 && training_type == "single" then
 
@@ -401,10 +398,21 @@ include "sub_generate_prompt.pcl";
 include "sub_collision_check.pcl";
 include "sub_disc_task_pcl_part.pcl";
 
+sub shape_feedback ( int correct )
+begin
+	if phase == 1 && section == 1 then
+		if correct == 1 then
+			shape_box.set_color( 0, 225, 0 );
+		elseif correct == 0 then
+			shape_box.set_color( 255, 0, 0 );
+		end;
+	end;
+end;
+
 ################
 
 loop
-	section = 1
+	section = 2
 until
 	section > max_sections
 begin
@@ -412,7 +420,7 @@ begin
 	trial_count_max = array_section_trials[section].count();
 
 	loop
-		trial_count = 1
+		trial_count = 3
 	until
 		trial_count > trial_count_max
 	begin
@@ -440,6 +448,7 @@ begin
 		array <int> array_shape_trial_accuracy [0];
 		array <int> array_shape_trial_accuracy_t_present [0];
 		array <int> array_shape_trial_accuracy_t_absent [0];
+		array <double> array_shape_trial_correct_RTs [0];
 		double last_shape_RT;
 		double time_current_shape;
 		
@@ -457,20 +466,60 @@ begin
 			term.print_line( "BLOCK ERROR" );
 		end;
 		
-		# generate pre-trial message
+		#########################################################################################
+		#########################################################################################
+		# PRE-TRIAL MESSAGE		
 		
 		create_new_prompt( 1 );
 		
-		if array_section_trials[section][trial_count] == 1 then
-			prompt_message.set_caption( "Next trial is disc task", true );
+		if array_section_trials[section][trial_count] == 1 && trial_count < 3 then
+			# first trial of this type
+			prompt_message.set_caption( "<b>NEXT TRIAL: DISC TRACKING TASK</b>\n\n" +
+				"A disc will bounce around the screen. Your task is to try and keep the mouse on the disc as much as possible.\n" +
+				"The disc will occasionally change direction without warning, so try your best to follow it!", true );
+				
+				if phase == 1 && section == 1 then
+					# additional instruction regarding difficulty adjustment and visual feedback
+					mid_button_text.set_caption( "Press SPACEBAR to continue", true );
+					prompt_trial.present();
+					prompt_message.set_caption( "If your accuracy at the end of the trial is above 80%, the disc will move slightly faster on the next trial.\n" +
+						"However, if your accuracy is below 80%, the disc will move slightly slower on the next trial.\n\n" +
+						"For this part, the disc will change colour depending on whether the mouse is on the disc or not. This visual feedback will not be displayed in later trials.", true );
+				else
+				end;
 
-		elseif array_section_trials[section][trial_count] == 2 then
-			prompt_message.set_caption( "Next trial is shape task", true );
-			prompt_pic.add_part( array_shapes[array_shape_pointers[1]], 0, 100 );
+		elseif array_section_trials[section][trial_count] == 1 && trial_count >= 3 then
+			# subsequent trial of this type
+			prompt_message.set_caption( "<b>NEXT TRIAL: DISC TRACKING TASK</b>", true );
+
+		elseif array_section_trials[section][trial_count] == 2 && trial_count < 3 then
+			# first trial of this type
+			prompt_message.set_caption( "<b>NEXT TRIAL: SHAPE GO/NO-GO TASK</b>\n\n" +
+				"A series of different shapes of different colours will appear in the centre of the screen, one after another.\n" +
+				"Your task is to press the SPACEBAR as quickly as possible when the target shape appears on the screen.\n\n" +
+				"<font color='255, 255, 0'>The target shape will be presented to you before each trial starts and will change with every new trial.</font>\n\n" + 
+				"Make sure you only respond if it is the SAME SHAPE AND THE SAME COLOUR!\n" +
+				"You will have to make sure your responses are fast as the shapes will quickly disappear.", true );
+
+				if phase == 1 && section == 1 then
+					# additional instruction regarding difficulty adjustment and visual feedback
+					mid_button_text.set_caption( "Press SPACEBAR to continue", true );
+					prompt_trial.present();
+					prompt_message.set_caption( "If your accuracy at the end of the trial is above 80%, the shapes will disappear slightly faster on the next trial.\n" +
+						"However, if your accuracy is below 80%, the shapes will disappear slightly slower on the next trial.\n\n" +
+						"For this part, the white square that the shapes are presented on will flash green or red when each shape disappears, depending on whether you responded correctly AND responded fast enough." +
+						"This visual feedback will not be displayed in later trials.", true );
+				else
+				end;
+
+		elseif array_section_trials[section][trial_count] == 2 && trial_count >= 3 then
+			# subsequent trial of this type
+			prompt_message.set_caption( "<b>NEXT TRIAL: SHAPE GO/NO-GO TASK</b>", true );
 
 		elseif array_section_trials[section][trial_count] == 3 then
-			prompt_message.set_caption( "Next trial is dual task", true );
-			prompt_pic.add_part( array_shapes[array_shape_pointers[1]], 0, 100 );
+			# same message for first and subsequent trials
+			prompt_message.set_caption( "<b>NEXT TRIAL: DUAL TASK</b>\n\n" +
+				"For this trial, you must complete both the disc tracking task and shape go/no-go task at the same time.", true );
 
 		else
 		end;
@@ -478,7 +527,7 @@ begin
 		mid_button_text.set_caption( "Press SPACEBAR to continue", true );
 		prompt_trial.present();
 
-		# Set secondary disc starting coordinates
+		# Set disc starting coordinates
 		array_starting_coordinates.shuffle();
 		array_starting_jitter.shuffle();
 		array_disc_current_xy[1][1] = 0.0;
@@ -491,13 +540,25 @@ begin
 		### PRE-TRIAL SETUP TRIAL ###
 
 		if array_section_trials[section][trial_count] == 1 || array_section_trials[section][trial_count] == 3  then
+			text_start_trial.set_caption( "Click on the disc to start the trial", true);
 			mse.set_pos( 1, 0.0 );
-			mse.set_pos( 2, 0.0 );
+			mse.set_pos( 2, 50.0 );
 			cursor_object.set_caption( "+", true );
 		elseif array_section_trials[section][trial_count] == 2 then
+			text_start_trial.set_caption( "Press the SPACEBAR to start the trial", true);
 			mse.set_pos( 1, max_x );
 			mse.set_pos( 2, max_y );
 			cursor_object.set_caption( " ", true );
+		end;
+		
+		if array_section_trials[section][trial_count] == 2 || array_section_trials[section][trial_count] == 3  then
+			text_shape_reminder.set_caption( "The target shape you must respond to on this trial is", true);
+			pic1.set_part_x( 9, 0.0 );
+			pic1.set_part_y( 9, 0.0 );
+			pic1.set_part( 9, array_shapes[array_shape_pointers[1]] );
+		else
+			pic1.set_part_x( 9, 9999.0 );
+			pic1.set_part_y( 9, 9999.0 );
 		end;
 		
 		# Set current value for response count. Every registered response will manually increment this value immediatelly follow trial presentation.
@@ -507,14 +568,19 @@ begin
 		#int registered_responses = response_manager.total_response_count();
 		int response_count = response_manager.total_response_count();
 
+		#########################################################################################
+		#########################################################################################
+		# START MAIN TRIAL LOOP		
+
 		loop
 			bool trial_end_flag = false;
 		until
 			trial_end_flag == true
 		begin
 
-			
-			### INITIATE TRIAL ###
+			#########################################################################################
+			#########################################################################################
+			# INITIATE TRIAL - wait for trigger and then code here runs once per loop
 
 			if array_section_trials[section][trial_count] == 1 then
 				if trial_state == "STANDBY" && mouse_on_target_disc == true && last_response == 2 then
@@ -539,6 +605,11 @@ begin
 
 			if trial_state == "STANDBY" && run_trial_initialisation == true then
 				trial_state = "COUNTDOWN";
+				text_start_trial.set_caption( " ", true );
+				text_shape_reminder.set_caption( " ", true );
+				pic1.set_part_x( 9, 9999.0 );
+				pic1.set_part_y( 9, 9999.0 );
+
 				trial_initiated_time = clock.time_double();
 				trial_start_time = trial_initiated_time + 5000.0;
 				trial_end_time = trial_start_time + trial_duration;
@@ -560,13 +631,13 @@ begin
 			pic1.set_part_x( 5, mse.x_position() );
 			pic1.set_part_y( 5, mse.y_position() );
 
-			# # # # # # # # # # #
+			#########################################################################################
+			#########################################################################################
+			# DISC TASK		
 
 			disc_task_pcl_part(); #subroutine
 			run_tracking_initialisation = false;
 
-			# # # # # # # # # # #
-			
 			#########################################################################################
 			#########################################################################################
 			# SHAPE TASK		
@@ -634,22 +705,23 @@ begin
 							# HIT
 							array_shape_trial_accuracy.add( 1 );
 							array_shape_trial_accuracy_t_present.add( 1 );
-							shape_box.set_color( 0, 225, 0 );
+							array_shape_trial_correct_RTs.add( last_shape_RT ); #######
+							shape_feedback(1);
 					elseif array_shape_target_present[shape_count] != 1 && last_response != 1 then
 							# CORRECT REJECTION
 							array_shape_trial_accuracy.add( 1 );
 							array_shape_trial_accuracy_t_absent.add( 1 );
-							shape_box.set_color( 0, 225, 0 );
+							shape_feedback(1);
 					elseif array_shape_target_present[shape_count] == 1 && last_response != 1 then
 							# MISS
 							array_shape_trial_accuracy.add( 0 );
 							array_shape_trial_accuracy_t_present.add( 0 );
-							shape_box.set_color( 255, 0, 0 );
+							shape_feedback(0);
 					elseif array_shape_target_present[shape_count] != 1 && last_response == 1 then
 							# FALSE ALARM
 							array_shape_trial_accuracy.add( 0 );
 							array_shape_trial_accuracy_t_absent.add( 0 );
-							shape_box.set_color( 255, 0, 0 );
+							shape_feedback(0);
 					end;
 										
 					# increment shape counter
@@ -694,13 +766,15 @@ begin
 					debug1.set_caption(" ", true);
 				end;
 
-			# # # # # # #
-
-			# PRESENT FRAME
+			#########################################################################################
+			#########################################################################################
+			# PRESENT FRAME		
 
 			trial1.present();
 
-			# CHECK FOR RESPONSE
+			#########################################################################################
+			#########################################################################################
+			# CHECK FOR RESPONSE		
 
 			if response_manager.total_response_count() > response_count then
 				last_response = response_manager.last_response();
@@ -753,73 +827,113 @@ begin
 
 		#########################################################################################
 		#########################################################################################
+		# ADJUST DIFFICULT ON THRESHOLD TRIALS		
+		
+		bool show_reset_message = false;
 		
 		if skip_level_adjustment == true then
 			# trial was reset, difficulty parameters are kept the same
+			show_reset_message = true;
 			skip_level_adjustment = false; # reset
 
 		elseif phase == 1 && section == 1 then
 		
 			# calculate how far accuracy differs from target band
-			
-			int tracking_level_change = 0;
-			int shape_level_change = 0;
-			shape_trial_accuracy = arithmetic_mean( array_shape_trial_accuracy ) * 100;
-			shape_trial_targets_hit = arithmetic_mean( array_shape_trial_accuracy ) * 100;
-			shape_trial_correct_rej = arithmetic_mean( array_shape_trial_accuracy ) * 100;
-			
-			if tracking_accuracy < tracking_target_min_accuracy then
-				# accuracy too low
-				disc_speed_description = "SLOWER";
-				tracking_level_change = -(int(( tracking_target_min_accuracy - tracking_accuracy ) / 1.75) + 1);
-			elseif tracking_accuracy > tracking_target_max_accuracy then
-				# accuracy too high
-				disc_speed_description = "FASTER";
-				tracking_level_change = int( abs( tracking_target_max_accuracy - tracking_accuracy ) / 1.75) + 1;
-			else
-				# accuracy okay
-				disc_speed_description = "THE SAME";
-				tracking_level_change = 0;
-			end;
 
-			if shape_trial_accuracy < shape_target_min_accuracy then
-				# accuracy too low
-				shape_speed_description = "SLOWER";
-				shape_level_change = -(int(( shape_target_min_accuracy - shape_trial_accuracy ) / 1.75) + 1);
-			elseif shape_trial_accuracy > shape_target_max_accuracy then
-				# accuracy too high
-				shape_speed_description = "FASTER";
-				shape_level_change = int( abs( shape_target_max_accuracy - shape_trial_accuracy ) / 1.75) + 1;
-			else
-				# accuracy okay
-				shape_speed_description = "AT THE SAME SPEED";
-				shape_level_change = 0;
-			end;
+			if array_section_trials[section][trial_count] == 1 then
 			
-			# adjust difficulty level
+				int tracking_level_change = 0;
 
-			current_tracking_level = current_tracking_level + tracking_level_change;
-			current_shape_level = current_shape_level + shape_level_change;
-		
-			# keep within level limits
+				if tracking_accuracy < tracking_target_min_accuracy then
+					# accuracy too low
+					disc_speed_description = "slower";
+					tracking_level_change = -(int(( tracking_target_min_accuracy - tracking_accuracy ) / 1.75) + 1);
+				elseif tracking_accuracy > tracking_target_max_accuracy then
+					# accuracy too high
+					disc_speed_description = "faster";
+					tracking_level_change = int( abs( tracking_target_max_accuracy - tracking_accuracy ) / 1.75) + 1;
+				else
+					# accuracy okay
+					disc_speed_description = "the same";
+					tracking_level_change = 0;
+				end;
 
-			if current_tracking_level < 1 then
-				current_tracking_level = 1
-			elseif current_tracking_level > tracking_staircase_percentages.count() then
-				current_tracking_level = tracking_staircase_percentages.count()
-			else
-			end;
+				current_tracking_level = current_tracking_level + tracking_level_change;
 			
-			if current_shape_level < 1 then
-				current_shape_level = 1
-			elseif current_shape_level > array_shape_staircase_percentages.count() then
-				current_shape_level = array_shape_staircase_percentages.count()
-			else
+				if current_tracking_level < 1 then
+					current_tracking_level = 1
+				elseif current_tracking_level > tracking_staircase_percentages.count() then
+					current_tracking_level = tracking_staircase_percentages.count()
+				else
+				end;
+
+			elseif array_section_trials[section][trial_count] == 2 then
+
+				int shape_level_change = 0;
+				shape_trial_accuracy = arithmetic_mean( array_shape_trial_accuracy ) * 100;
+				shape_trial_targets_hit = arithmetic_mean( array_shape_trial_accuracy ) * 100;
+				shape_trial_correct_rej = arithmetic_mean( array_shape_trial_accuracy ) * 100;
+				
+				if shape_trial_accuracy < shape_target_min_accuracy then
+					# accuracy too low
+					shape_speed_description = "slower";
+					shape_level_change = -(int(( shape_target_min_accuracy - shape_trial_accuracy ) / 1.75) + 1);
+				elseif shape_trial_accuracy > shape_target_max_accuracy then
+					# accuracy too high
+					shape_speed_description = "faster";
+					shape_level_change = int( abs( shape_target_max_accuracy - shape_trial_accuracy ) / 1.75) + 1;
+				else
+					# accuracy okay
+					shape_speed_description = "at the same speed";
+					shape_level_change = 0;
+				end;
+				
+				# adjust difficulty level
+
+				current_shape_level = current_shape_level + shape_level_change;
+			
+				# keep within level limits
+				
+				if current_shape_level < 1 then
+					current_shape_level = 1
+				elseif current_shape_level > array_shape_staircase_percentages.count() then
+					current_shape_level = array_shape_staircase_percentages.count()
+				else
+				end;
+
 			end;
 		
 		end; # ENDIF
 	
-		# # # # #
+		#########################################################################################
+		#########################################################################################
+		# PRESENT END OF TRIAL SUMMARY		
+		
+		if show_reset_message == true then
+			prompt_message.set_caption( "Trial was terminated early.\n\nTrial difficulty will not be adjusted and the trial counter will not increment.\n\nA trial of the same type as before will now begin.", true );
+			show_reset_message = false;
+		
+		elseif array_section_trials[section][trial_count] == 1 && phase == 1 && section == 1 then # disc/threshold
+			prompt_message.set_caption( "Accuracy (time mouse spent on disc) for the previous trial was: " + string(round(tracking_accuracy,2)) + "%\n" +
+				"The disc's speed will be " + disc_speed_description + " on the next trial.", true );
+
+		elseif array_section_trials[section][trial_count] == 1 && ( ( phase == 1 && section == 2 ) || ( phase == 2 || phase == 3 ) ) then # disc
+			prompt_message.set_caption( "Accuracy (time mouse spent on disc) for the previous trial was: " + string(round(tracking_accuracy,2)), true );
+
+		elseif array_section_trials[section][trial_count] == 2 && phase == 1 && section == 1 then # shape/threshold
+			prompt_message.set_caption( "Accuracy (correct response and correct rejections) for the previous trial was: " + string(round(shape_trial_accuracy,2)) + "%\n" +
+				"Shapes will disappear " + shape_speed_description + " on the next trial.", true );
+
+		elseif array_section_trials[section][trial_count] == 2 && ( ( phase == 1 && section == 2 ) || ( phase == 2 || phase == 3 ) ) then # shape
+			prompt_message.set_caption( "Accuracy (correct response and correct rejections) for the previous trial was: " + string(round(shape_trial_accuracy,2)), true );
+
+		elseif array_section_trials[section][trial_count] == 3 then # dual
+			prompt_message.set_caption( "Accuracy (time mouse spent on disc) for the previous trial was: " + string(round(tracking_accuracy,2)) + "%\n" +
+				"Accuracy (correct response and correct rejections) for the previous trial was: " + string(round(shape_trial_accuracy,2)), true );
+
+		end;
+		
+		prompt_trial.present();
 		
 		trial_count = trial_count + 1;
 	end;

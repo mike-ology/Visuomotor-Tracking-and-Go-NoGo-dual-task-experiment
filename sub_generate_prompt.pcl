@@ -33,6 +33,7 @@ text right_button_text = new text();
 
 text prompt_message = new text();
 prompt_message.set_max_text_width( display_device.width() - 100 );
+prompt_message.set_font_size( 28 );
 prompt_message.redraw();
 
 left_button_text.set_background_color( 0, 255, 0, 128 );

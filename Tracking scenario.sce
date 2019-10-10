@@ -312,6 +312,7 @@ bool run_tracking_initialisation;
 bool run_shape_initialisation;
 int frame_count;
 int last_response;
+double last_response_time = -1;
 bool new_response = false;
 int trial_count;
 int trial_count_max;
@@ -331,7 +332,6 @@ double tracking_target_max_accuracy = 82.5;
 int baseline_tracking_speed = 5;
 int baseline_tracking_level = 29;
 int current_tracking_level = baseline_tracking_level;
-int final_tracking_level;
 
 double speed_x = baseline_tracking_speed;
 double speed_y = baseline_tracking_speed;
@@ -389,6 +389,8 @@ double shape_mini_trials;
 double shape_trial_accuracy;
 double shape_trial_targets_hit;
 double shape_trial_correct_rej;
+bool shape_trial_response_recorded;
+double shape_time_limit;
 
 # # # #
 
@@ -412,7 +414,7 @@ end;
 ################
 
 loop
-	section = 2
+	section = 1
 until
 	section > max_sections
 begin
@@ -420,7 +422,7 @@ begin
 	trial_count_max = array_section_trials[section].count();
 
 	loop
-		trial_count = 3
+		trial_count = 2
 	until
 		trial_count > trial_count_max
 	begin
@@ -435,9 +437,7 @@ begin
 		frame_count = 0;
 		frames_inside_disc = 0;
 		frames_outside_disc = 0;
-		tracking_accuracy;
 		last_response = 0;
-		mouse_on_target_disc;
 		
 		int shape_count = 1;
 		double time_present_next_shape = 0;
@@ -445,11 +445,11 @@ begin
 		double time_shape_feedback_ends = 0;
 		string shape_task_state;
 		array_shape_pointers.shuffle();
-		array <int> array_shape_trial_accuracy [0];
-		array <int> array_shape_trial_accuracy_t_present [0];
-		array <int> array_shape_trial_accuracy_t_absent [0];
-		array <double> array_shape_trial_correct_RTs [0];
-		double last_shape_RT;
+		array <double> array_shape_trial_accuracy [0];
+		array <double> array_shape_trial_accuracy_t_present [0];
+		array <double> array_shape_trial_accuracy_t_absent [0];
+		array <double> array_shape_trial_all_RTs [0];
+		double last_shape_RT = -1;
 		double time_current_shape;
 		
 		# determine next trial
@@ -682,19 +682,27 @@ begin
 				end;
 				
 				shape_task_state = "STIMULUS ACTIVE";
+				shape_trial_response_recorded = false;
+				last_shape_RT = -1;
 				
 				time_current_shape = clock.time_double();
-				time_shape_expires = clock.time_double() + baseline_shape_duration * (array_shape_staircase_percentages[current_shape_level]/100.0);
+				shape_time_limit = baseline_shape_duration * array_shape_staircase_percentages[current_shape_level]/100.0;
+				time_shape_expires = clock.time_double() + shape_time_limit;
 				time_present_next_shape = clock.time_double() + ( array_shape_threshold_intervals[shape_count] * 1000 );
 			end;
 
+			if last_response == 1 && shape_trial_response_recorded == false then
+				# first response to shape mini trial
+				shape_trial_response_recorded = true;
+				last_shape_RT = last_response_time - time_current_shape;
+				array_shape_trial_all_RTs.add( last_shape_RT );
+			end;
 
-			if ( clock.time_double() >= time_shape_expires && time_shape_expires != 0 ) 
+			if ( clock.time_double() >= time_shape_expires && time_shape_expires != 0.0 ) 
 				|| ( last_response == 1 && shape_task_state == "STIMULUS ACTIVE" ) then
 
-				# remove previous shape on response or time expiring
+					# remove previous shape on response or time expiring
 					pic1.remove_part( pic1.part_count() );
-					last_shape_RT = clock.time() - time_current_shape;
 
 					double time_remaining = time_shape_expires - clock.time_double();
 					time_shape_expires = 0.0;
@@ -704,23 +712,22 @@ begin
 					if array_shape_target_present[shape_count] == 1 && last_response == 1 then
 							# HIT
 							array_shape_trial_accuracy.add( 1 );
-							array_shape_trial_accuracy_t_present.add( 1 );
-							array_shape_trial_correct_RTs.add( last_shape_RT ); #######
+							array_shape_trial_accuracy_t_present.add( 1.0 );
 							shape_feedback(1);
 					elseif array_shape_target_present[shape_count] != 1 && last_response != 1 then
 							# CORRECT REJECTION
 							array_shape_trial_accuracy.add( 1 );
-							array_shape_trial_accuracy_t_absent.add( 1 );
+							array_shape_trial_accuracy_t_absent.add( 1.0 );
 							shape_feedback(1);
 					elseif array_shape_target_present[shape_count] == 1 && last_response != 1 then
 							# MISS
 							array_shape_trial_accuracy.add( 0 );
-							array_shape_trial_accuracy_t_present.add( 0 );
+							array_shape_trial_accuracy_t_present.add( 0.0 );
 							shape_feedback(0);
 					elseif array_shape_target_present[shape_count] != 1 && last_response == 1 then
 							# FALSE ALARM
 							array_shape_trial_accuracy.add( 0 );
-							array_shape_trial_accuracy_t_absent.add( 0 );
+							array_shape_trial_accuracy_t_absent.add( 0.0 );
 							shape_feedback(0);
 					end;
 										
@@ -739,7 +746,7 @@ begin
 			int debug_time_remaining = int((trial_end_time - clock.time_double() ))/1000;
 			if debug_time_remaining < 0 then debug_time_remaining = 0; else end;
 			
-			int debug_last_shape_accurate;
+			double debug_last_shape_accurate;
 			if array_shape_trial_accuracy.count() == 0 then
 				debug_last_shape_accurate = -1
 			else
@@ -757,7 +764,8 @@ begin
 					"Frames inside: " + string(frames_inside_disc) + "\n" +
 					"Total Frames: " + string(frame_count) + "\n\n" +
 					"Last shape trial accurate: " + string(debug_last_shape_accurate) + "\n" +
-					"Last shape reaction time: " + string(round(last_shape_RT,0)) + "\n\n" +
+					"Last shape reaction time: " + string(round(last_shape_RT,0)) + "\n" +
+					"Last shape time limit: " + string(round(shape_time_limit,0)) + "\n\n" +
 					"[T] Increment trial counter\n" + 
 					"[R] Reset trial\n" + 
 					"[N] End trial, go to next\n" +
@@ -776,12 +784,19 @@ begin
 			#########################################################################################
 			# CHECK FOR RESPONSE		
 
+			response_data resp_data;
+
 			if response_manager.total_response_count() > response_count then
+				resp_data = response_manager.last_response_data();
+				last_response_time = resp_data.time_double();
 				last_response = response_manager.last_response();
 				response_count = response_count + 1;
 			else
 				last_response = 0;
+				last_response_time = 0;
 			end;
+			
+			# DEBUG SETTINGS
 			
 			if last_response == 3 && debug_mode == true  then
 				trial_count = trial_count + 1;
@@ -827,7 +842,7 @@ begin
 
 		#########################################################################################
 		#########################################################################################
-		# ADJUST DIFFICULT ON THRESHOLD TRIALS		
+		# ADJUST DIFFICULTY ON THRESHOLD TRIALS		
 		
 		bool show_reset_message = false;
 		
@@ -870,9 +885,9 @@ begin
 			elseif array_section_trials[section][trial_count] == 2 then
 
 				int shape_level_change = 0;
-				shape_trial_accuracy = arithmetic_mean( array_shape_trial_accuracy ) * 100;
-				shape_trial_targets_hit = arithmetic_mean( array_shape_trial_accuracy ) * 100;
-				shape_trial_correct_rej = arithmetic_mean( array_shape_trial_accuracy ) * 100;
+				shape_trial_accuracy = arithmetic_mean( array_shape_trial_accuracy ) * 100.0;
+				shape_trial_targets_hit = arithmetic_mean( array_shape_trial_accuracy ) * 100.0;
+				shape_trial_correct_rej = arithmetic_mean( array_shape_trial_accuracy ) * 100.0;
 				
 				if shape_trial_accuracy < shape_target_min_accuracy then
 					# accuracy too low
@@ -907,7 +922,9 @@ begin
 	
 		#########################################################################################
 		#########################################################################################
-		# PRESENT END OF TRIAL SUMMARY		
+		# PRESENT END OF TRIAL SUMMARY
+		
+		int average_shape_RT = int(round(arithmetic_mean( array_shape_trial_all_RTs ), 0 ));
 		
 		if show_reset_message == true then
 			prompt_message.set_caption( "Trial was terminated early.\n\nTrial difficulty will not be adjusted and the trial counter will not increment.\n\nA trial of the same type as before will now begin.", true );
@@ -917,19 +934,22 @@ begin
 			prompt_message.set_caption( "Accuracy (time mouse spent on disc) for the previous trial was: " + string(round(tracking_accuracy,2)) + "%\n" +
 				"The disc's speed will be " + disc_speed_description + " on the next trial.", true );
 
-		elseif array_section_trials[section][trial_count] == 1 && ( ( phase == 1 && section == 2 ) || ( phase == 2 || phase == 3 ) ) then # disc
-			prompt_message.set_caption( "Accuracy (time mouse spent on disc) for the previous trial was: " + string(round(tracking_accuracy,2)), true );
+		elseif array_section_trials[section][trial_count] == 1 && ( ( phase == 1 && section == 2 ) || ( phase == 2 || phase == 3 ) ) then # disc/ not threshold
+			prompt_message.set_caption( "Accuracy (time mouse spent on disc) for the previous trial was: " + string(round(tracking_accuracy,2)) + "%", true );
 
 		elseif array_section_trials[section][trial_count] == 2 && phase == 1 && section == 1 then # shape/threshold
 			prompt_message.set_caption( "Accuracy (correct response and correct rejections) for the previous trial was: " + string(round(shape_trial_accuracy,2)) + "%\n" +
+				"Average reaction time (for trials where a response occurred) was: " + string(average_shape_RT) + "ms\n" +
 				"Shapes will disappear " + shape_speed_description + " on the next trial.", true );
 
 		elseif array_section_trials[section][trial_count] == 2 && ( ( phase == 1 && section == 2 ) || ( phase == 2 || phase == 3 ) ) then # shape
-			prompt_message.set_caption( "Accuracy (correct response and correct rejections) for the previous trial was: " + string(round(shape_trial_accuracy,2)), true );
+			prompt_message.set_caption( "Accuracy (correct response and correct rejections) for the previous trial was: " + string(round(shape_trial_accuracy,2)) + "%\n" +
+				"Average reaction time (for trials where a response occurred) was: " + string(average_shape_RT) + "ms", true );
 
 		elseif array_section_trials[section][trial_count] == 3 then # dual
 			prompt_message.set_caption( "Accuracy (time mouse spent on disc) for the previous trial was: " + string(round(tracking_accuracy,2)) + "%\n" +
-				"Accuracy (correct response and correct rejections) for the previous trial was: " + string(round(shape_trial_accuracy,2)), true );
+				"Accuracy (correct response and correct rejections) for the previous trial was: " + string(round(shape_trial_accuracy,2)) + "%\n" +
+				"Average reaction time (for trials where a response occurred) was: " + string(average_shape_RT) + "ms\n", true );
 
 		end;
 		

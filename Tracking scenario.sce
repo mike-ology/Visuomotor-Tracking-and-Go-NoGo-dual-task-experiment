@@ -188,6 +188,10 @@ trial {
 	
 }trial1;
 
+#########################################################################################
+#########################################################################################
+# START PCL SECTION		
+
 begin_pcl;
 
 bool debug_mode = true;
@@ -208,8 +212,8 @@ mse.set_pos( 2, 0 );
 
 # initialise general trial parameters and variables
 
-int phase = 1;
-string training_type = "single";
+int phase = 2;
+string training_type = "dual";
 int section;
 int max_sections;
 array <int> array_section_trials [2][0];
@@ -421,8 +425,72 @@ begin
 	
 	trial_count_max = array_section_trials[section].count();
 
+	#########################################################################################
+	#########################################################################################
+	# SECTION START MESSAGE
+
+	create_new_prompt( 1 );
+	mid_button_text.set_caption( "Press SPACEBAR to continue", true );
+	
+	if phase == 1 && section == 1 then # thresholding
+		
+		prompt_message.set_caption( "<b>PRACTICE AND DIFFICULTY THRESHOLDING</b>\n\n" +
+			"In this part, you will alternate between completing two different tasks. One will require you to use the mouse to track a disc's movements on the screen, and the other will require you to respond to certain target shapes appearing (whilst ignoring others)\n\n" +
+			"Later, you will complete both tasks at the same time! For now, you will practice each one separately.\n\n" +
+			"The difficulty of each task will be adjusted from trial-to-trial based on your performance.\n\n" +
+			"<font color='255, 255, 0'>In this part, you will complete XX trials, XX of each type. Each disc trial will run for XX seconds, and each shape trial will run for XX seconds</font>\n\n" +
+			"On the next screen, you will receive more detail about the task you will complete on the first trial.", true );
+			
+			prompt_trial.present();
+			
+	elseif phase == 1 && section == 2 then # testing
+		
+		prompt_message.set_caption( "<b>TEST SESSION</b>\n\n" +
+			"In this part, you will be tested to see how your performance compares on each task separately, as well as on both tasks simultaneously.\n\n" +
+			"For this new, dual task, condition try not to prioritise one task at the expense of the other. Performance on both tasks is equally important.\n\n" +
+			"The difficulty will no longer change and is set based on your performance in the previous section.\n\n" +
+			"<font color='255, 255, 0'>In this part, you will complete XX trials, XX of each type. Each trial will run for XX seconds</font>\n\n" +
+			"On the next screen, you will be informed about the first task.", true );
+			
+			prompt_trial.present();
+			
+	elseif phase == 2 && training_type == "single" then # training using single task conditions
+		
+		prompt_message.set_caption( "<b>SINGLE TASK TRAINING</b>\n\n" +
+			"In this part, you will alternate between completing the disc and shape tasks. Specifically, you will complete these tasks separately - there is no dual task condition in this part.\n\n" +
+			"The difficulty will be based on your performance during the initial session.\n\n" +
+			"<font color='255, 255, 0'>In this part, you will complete XX trials, XX of each type. Each trial will run for XX seconds.</font>\n\n" +
+			"On the next screen, you will receive more detail about the task you will complete on the first trial.", true );
+			
+			prompt_trial.present();
+			
+	elseif phase == 2 && training_type == "dual" then # training using dual task conditions
+		
+		prompt_message.set_caption( "<b>DUAL TASK TRAINING</b>\n\n" +
+			"In this part, you will be completing the disc and shape tasks simultaneously. Specifically, every trial will be the dual task condition where you complete the disc tracking and shape tasks at the same time.\n\n" +
+			"The difficulty will be based on your performance during the initial session.\n\n" +
+			"<font color='255, 255, 0'>In this part, you will complete XX trials. Each trial will run for XX seconds.</font>\n\n" +
+			"On the next screen, you will receive more detail about the task you will complete on the first trial.", true );
+			
+			prompt_trial.present();
+			
+	elseif phase == 3 then # testing
+		
+		prompt_message.set_caption( "<b>TEST SESSION</b>\n\n" +
+			"In this part, you will be tested to see how your performance compares on each task separately, as well as on both tasks simultaneously.\n\n" +
+			"For the dual task condition try not to prioritise one task at the expense of the other. Performance on both tasks is equally important.\n\n" +
+			"The difficulty will no longer change and is set based on your performance in the previous section.\n\n" +
+			"<font color='255, 255, 0'>In this part, you will complete XX trials, XX of each type. Each trial will run for XX seconds</font>\n\n" +
+			"On the next screen, you will be informed about the first task.", true );
+			
+			prompt_trial.present();
+			
+	else
+		term.print_line( "MESSAGE LOGIC ERROR" );
+	end;
+
 	loop
-		trial_count = 2
+		trial_count = 1
 	until
 		trial_count > trial_count_max
 	begin
@@ -465,7 +533,7 @@ begin
 		else
 			term.print_line( "BLOCK ERROR" );
 		end;
-		
+
 		#########################################################################################
 		#########################################################################################
 		# PRE-TRIAL MESSAGE		

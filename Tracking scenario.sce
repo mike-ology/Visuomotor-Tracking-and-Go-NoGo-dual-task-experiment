@@ -758,8 +758,10 @@ begin
 				time_shape_expires = clock.time_double() + shape_time_limit;
 				time_present_next_shape = clock.time_double() + ( array_shape_threshold_intervals[shape_count] * 1000 );
 			end;
+			
+			### REGISTER RESPONSE REACTION TIME
 
-			if last_response == 1 && shape_trial_response_recorded == false then
+			if last_response == 1 && shape_trial_response_recorded == false && trial_state == "TRIAL ACTIVE" then
 				# first response to shape mini trial
 				shape_trial_response_recorded = true;
 				last_shape_RT = last_response_time - time_current_shape;

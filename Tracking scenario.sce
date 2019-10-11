@@ -924,7 +924,7 @@ begin
 		#########################################################################################
 		# PRESENT END OF TRIAL SUMMARY
 		
-		int average_shape_RT = int(round(arithmetic_mean( array_shape_trial_all_RTs ), 0 ));
+		int median_shape_RT = int(round(median_value( array_shape_trial_all_RTs ), 0 ));
 		
 		if show_reset_message == true then
 			prompt_message.set_caption( "Trial was terminated early.\n\nTrial difficulty will not be adjusted and the trial counter will not increment.\n\nA trial of the same type as before will now begin.", true );
@@ -939,17 +939,17 @@ begin
 
 		elseif array_section_trials[section][trial_count] == 2 && phase == 1 && section == 1 then # shape/threshold
 			prompt_message.set_caption( "Accuracy (correct response and correct rejections) for the previous trial was: " + string(round(shape_trial_accuracy,2)) + "%\n" +
-				"Average reaction time (for trials where a response occurred) was: " + string(average_shape_RT) + "ms\n" +
+				"Median reaction time (for trials where a response occurred) was: " + string(median_shape_RT) + "ms\n" +
 				"Shapes will disappear " + shape_speed_description + " on the next trial.", true );
 
 		elseif array_section_trials[section][trial_count] == 2 && ( ( phase == 1 && section == 2 ) || ( phase == 2 || phase == 3 ) ) then # shape
 			prompt_message.set_caption( "Accuracy (correct response and correct rejections) for the previous trial was: " + string(round(shape_trial_accuracy,2)) + "%\n" +
-				"Average reaction time (for trials where a response occurred) was: " + string(average_shape_RT) + "ms", true );
+				"Median reaction time (for trials where a response occurred) was: " + string(median_shape_RT) + "ms", true );
 
 		elseif array_section_trials[section][trial_count] == 3 then # dual
 			prompt_message.set_caption( "Accuracy (time mouse spent on disc) for the previous trial was: " + string(round(tracking_accuracy,2)) + "%\n" +
 				"Accuracy (correct response and correct rejections) for the previous trial was: " + string(round(shape_trial_accuracy,2)) + "%\n" +
-				"Average reaction time (for trials where a response occurred) was: " + string(average_shape_RT) + "ms\n", true );
+				"Median reaction time (for trials where a response occurred) was: " + string(median_shape_RT) + "ms\n", true );
 
 		end;
 		

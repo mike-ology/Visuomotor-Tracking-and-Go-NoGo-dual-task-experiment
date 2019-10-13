@@ -145,6 +145,12 @@
 </dat>
 <id>12</id>
 </val>
+<val>
+<dat>
+<val>300</val>
+</dat>
+<id>13</id>
+</val>
 </sd>
 <sid>-1</sid>
 </ss>
@@ -160,6 +166,7 @@
 <pid>1</pid>
 <pid>11</pid>
 <pid>12</pid>
+<pid>13</pid>
 </pl>
 </grp>
 <grp>
@@ -395,6 +402,22 @@ At any time during a trial, pressing ` (~) will toggle the debug mode.</desc>
 </set>
 <temp>1</temp>
 <type>string</type>
+<vis>1</vis>
+</set>
+</parm>
+<parm>
+<id>13</id>
+<set>
+<desc>Distance travelled by the disc at baseline difficulty (level 29) in pixels per second.
+
+Calculations occur to ensure that the actual speed is identical across monitors with different frame rates. However, different screen resolutions will result in different speeds in terms of visual angle!</desc>
+<edit>1</edit>
+<name>Speed (px/s)</name>
+<set>
+<rest></rest>
+</set>
+<temp>0</temp>
+<type>int</type>
 <vis>1</vis>
 </set>
 </parm>

@@ -199,6 +199,7 @@ bool draw_other_discs = false;
 
 double req_screen_x = 1920.0;
 double req_screen_y = 1080.0;
+double refresh_rate = ( 1000.0 / display_device.refresh_period() );
 
 # User parameters for logfile generation
 # If filename already exists, a new file is created with an appended number
@@ -370,16 +371,14 @@ string parameter_tracking_level = parameter_manager.get_string( "Initial Trackin
 
 if parameter_tracking_level == "29 (default)" then parameter_tracking_level = "29" else end;
 
-int baseline_tracking_speed = 5; # value indicates the number of pixels the disc moves per frame at the default difficulty level
+double baseline_tracking_speed = ( parameter_manager.get_int( "Speed (px/s)", 300 ) / refresh_rate ); # value indicates the number of pixels the disc moves per frame at the default difficulty level
 											# it WILL be affected by the refresh rate of the monitor
 int baseline_tracking_level;
-
 if is_int( parameter_tracking_level ) == true then
 	baseline_tracking_level = int(parameter_tracking_level)
 else
 	baseline_tracking_level = 29;
 end;
-
 int current_tracking_level = baseline_tracking_level;
 
 double speed_x = baseline_tracking_speed;

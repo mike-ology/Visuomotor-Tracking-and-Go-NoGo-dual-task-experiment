@@ -30,11 +30,11 @@
 <depchg>1</depchg>
 <discard_windows_messages>0</discard_windows_messages>
 <display_status_window>1</display_status_window>
-<dmd>0</dmd>
-<dmh>0</dmh>
-<dmr>1</dmr>
-<dmrf>1</dmrf>
-<dmw>0</dmw>
+<dmd>32</dmd>
+<dmh>1080</dmh>
+<dmr>60</dmr>
+<dmrf>60</dmrf>
+<dmw>1920</dmw>
 <docs>
 <args></args>
 <exfl></exfl>
@@ -66,7 +66,86 @@
 <ss>0</ss>
 </r>
 <ss>
-<sd></sd>
+<sd>
+<val>
+<dat>
+<val>1</val>
+</dat>
+<id>0</id>
+</val>
+<val>
+<dat>
+<val>NO</val>
+</dat>
+<id>1</id>
+</val>
+<val>
+<dat>
+<val>18</val>
+</dat>
+<id>2</id>
+</val>
+<val>
+<dat>
+<val>60</val>
+</dat>
+<id>3</id>
+</val>
+<val>
+<dat>
+<val>120</val>
+</dat>
+<id>4</id>
+</val>
+<val>
+<dat>
+<val>single</val>
+</dat>
+<id>5</id>
+</val>
+<val>
+<dat>
+<val>12</val>
+</dat>
+<id>6</id>
+</val>
+<val>
+<dat>
+<val>180</val>
+</dat>
+<id>7</id>
+</val>
+<val>
+<dat>
+<val>15</val>
+</dat>
+<id>8</id>
+</val>
+<val>
+<dat>
+<val>180</val>
+</dat>
+<id>9</id>
+</val>
+<val>
+<dat>
+<val>0</val>
+</dat>
+<id>10</id>
+</val>
+<val>
+<dat>
+<val>29 (default)</val>
+</dat>
+<id>11</id>
+</val>
+<val>
+<dat>
+<val>29 (default)</val>
+</dat>
+<id>12</id>
+</val>
+</sd>
 <sid>-1</sid>
 </ss>
 </dcfg>
@@ -75,13 +154,251 @@
 <dl>
 <grps>
 <grp>
-<gn></gn>
-<pl></pl>
+<gn>General Parameters</gn>
+<pl>
+<pid>0</pid>
+<pid>1</pid>
+<pid>11</pid>
+<pid>12</pid>
+</pl>
+</grp>
+<grp>
+<gn>Phase 1 - Threshold Parameters</gn>
+<pl>
+<pid>2</pid>
+<pid>3</pid>
+<pid>4</pid>
+</pl>
+</grp>
+<grp>
+<gn>Phase 2 - Training Parameters</gn>
+<pl>
+<pid>5</pid>
+<pid>6</pid>
+<pid>7</pid>
+</pl>
+</grp>
+<grp>
+<gn>Phase 1 &amp; 3 - Testing Parameters</gn>
+<pl>
+<pid>8</pid>
+<pid>9</pid>
+</pl>
+</grp>
+<grp>
+<gn>Debug Settings</gn>
+<pl>
+<pid>10</pid>
+</pl>
 </grp>
 </grps>
 </dl>
 <parms>
-<parms></parms>
+<parms>
+<parm>
+<id>0</id>
+<set>
+<desc>1 - Thresholding section followed by Test Section
+2 - Training Section
+3 - Test Section</desc>
+<edit>1</edit>
+<name>Phase</name>
+<set>
+<rest>[1,3]</rest>
+</set>
+<temp>1</temp>
+<type>int</type>
+<vis>1</vis>
+</set>
+</parm>
+<parm>
+<id>1</id>
+<set>
+<desc>YES - initially save logfile data to a location on C:/ and copy this file to the default logfile location at the experiments end. Useful when running from a network location and reducing network read/write issues.
+NO - save the logfile to the default logfile location</desc>
+<edit>1</edit>
+<name>Use Local Save</name>
+<set>
+<rest>YES,NO</rest>
+</set>
+<temp>0</temp>
+<type>string</type>
+<vis>1</vis>
+</set>
+</parm>
+<parm>
+<id>2</id>
+<set>
+<desc>Must be divisible by 2.
+
+[Default value: 18]</desc>
+<edit>1</edit>
+<name>Total Threshold Trials</name>
+<set>
+<rest></rest>
+</set>
+<temp>0</temp>
+<type>int</type>
+<vis>1</vis>
+</set>
+</parm>
+<parm>
+<id>3</id>
+<set>
+<desc>Duration of tracking trials during thresholding
+
+[Default value: 60]</desc>
+<edit>1</edit>
+<name>Threshold Tracking Trial Duration</name>
+<set>
+<rest></rest>
+</set>
+<temp>0</temp>
+<type>int</type>
+<vis>1</vis>
+</set>
+</parm>
+<parm>
+<id>4</id>
+<set>
+<desc>Duration of shape trials during thresholding (must be divisible by 15, ensures even number of target present/absent and shape gaps (2, 2.5, 3s) to be presented in each trial).
+
+[Default value: 120]</desc>
+<edit>1</edit>
+<name>Threshold Shape Trial Duration</name>
+<set>
+<rest></rest>
+</set>
+<temp>0</temp>
+<type>int</type>
+<vis>1</vis>
+</set>
+</parm>
+<parm>
+<id>5</id>
+<set>
+<desc>single - participants will be trained using the single tracking and shape task conditions
+dual - participants will be training using only the dual task condition</desc>
+<edit>1</edit>
+<name>Training Condition</name>
+<set>
+<rest>single,dual</rest>
+</set>
+<temp>0</temp>
+<type>string</type>
+<vis>1</vis>
+</set>
+</parm>
+<parm>
+<id>6</id>
+<set>
+<desc>Must be divisible by 2.
+
+[Default value: 12]</desc>
+<edit>1</edit>
+<name>Total Training Trials</name>
+<set>
+<rest></rest>
+</set>
+<temp>0</temp>
+<type>int</type>
+<vis>1</vis>
+</set>
+</parm>
+<parm>
+<id>7</id>
+<set>
+<desc>Duration of all trials during training phase (must be divisible by 15, ensures even number of target present/absent and shape gaps (2, 2.5, 3s) to be presented in each trial).
+
+[Default value: 180]</desc>
+<edit>1</edit>
+<name>Training Trial Duration</name>
+<set>
+<rest></rest>
+</set>
+<temp>0</temp>
+<type>int</type>
+<vis>1</vis>
+</set>
+</parm>
+<parm>
+<id>8</id>
+<set>
+<desc>Must be divisible by 3
+
+[Default value: 15]</desc>
+<edit>1</edit>
+<name>Total Test Trials</name>
+<set>
+<rest></rest>
+</set>
+<temp>0</temp>
+<type>int</type>
+<vis>1</vis>
+</set>
+</parm>
+<parm>
+<id>9</id>
+<set>
+<desc>Duration of all trials during testing (must be divisible by 15, ensures even number of target present/absent and shape gaps (2, 2.5, 3s) to be presented in each trial).
+
+[Default value: 180]</desc>
+<edit>1</edit>
+<name>Test Trial Duration</name>
+<set>
+<rest></rest>
+</set>
+<temp>0</temp>
+<type>int</type>
+<vis>1</vis>
+</set>
+</parm>
+<parm>
+<id>10</id>
+<set>
+<desc>TRUE - debug information is displayed when the experiment is run. Additional functions are available.
+FALSE - debug information is hidden when the experiment is run.
+
+At any time during a trial, pressing ` (~) will toggle the debug mode.</desc>
+<edit>1</edit>
+<name>Debug Mode</name>
+<set>
+<rest></rest>
+</set>
+<temp>0</temp>
+<type>bool</type>
+<vis>1</vis>
+</set>
+</parm>
+<parm>
+<id>11</id>
+<set>
+<desc>Starting tracking level (default = 29)</desc>
+<edit>1</edit>
+<name>Initial Tracking Level</name>
+<set>
+<rest>1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29 (default),30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49</rest>
+</set>
+<temp>1</temp>
+<type>string</type>
+<vis>1</vis>
+</set>
+</parm>
+<parm>
+<id>12</id>
+<set>
+<desc>Starting shape level (default = 29)</desc>
+<edit>1</edit>
+<name>Initial Shape Level</name>
+<set>
+<rest>1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29 (default),30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49</rest>
+</set>
+<temp>1</temp>
+<type>string</type>
+<vis>1</vis>
+</set>
+</parm>
+</parms>
 <ssl></ssl>
 </parms>
 <pass></pass>

@@ -194,7 +194,7 @@ trial {
 
 begin_pcl;
 
-bool debug_mode = true;
+bool debug_mode = parameter_manager.get_bool( "Debug Mode", false );
 bool draw_other_discs = false;
 
 double req_screen_x = 1920.0;
@@ -225,25 +225,26 @@ mse.set_pos( 2, 0 );
 
 # initialise general trial parameters and variables
 
-int phase = 3;
-string training_type = "single";
+int phase = parameter_manager.get_int( "Phase", 1 );
+string training_type = parameter_manager.get_string( "Training Condition", "single" );
 int section;
 int max_sections;
+
 array <int> array_section_trials [2][0];
 array <int> array_trials_per_task [2];
 array <int> array_tracking_trial_length [2];
 array <int> array_shape_trial_length [2];
 array <int> array_dual_trial_length [2];
 
-int threshold_trial_count = 18;
-int threshold_tracking_trial_duration = 60;
-int threshold_shape_trial_duration = 120;
+int threshold_trial_count = parameter_manager.get_int( "Total Threshold Trials", 18 );
+int threshold_tracking_trial_duration = parameter_manager.get_int( "Threshold Tracking Trial Duration", 60 );
+int threshold_shape_trial_duration = parameter_manager.get_int( "Threshold Shape Trial Duration", 120 );
 
-int test_trial_count = 15;
-int test_trial_duration = 180;
+int test_trial_count = parameter_manager.get_int( "Total Test Trials", 15 );
+int test_trial_duration = parameter_manager.get_int( "Test Trial Duration", 180 );
 
-int training_trial_count = 12;
-int training_trial_duration = 180;
+int training_trial_count = parameter_manager.get_int( "Total Training Trials", 12 );
+int training_trial_duration = parameter_manager.get_int( "Training Trial Duration", 180 );
 
 if phase == 1 then
 
@@ -362,12 +363,29 @@ array <double> tracking_staircase_percentages [49] = {
 
 double tracking_target_min_accuracy = 77.5;
 double tracking_target_max_accuracy = 82.5;
-int baseline_tracking_speed = 5;
-int baseline_tracking_level = 29;
+
+	# setup initial tracking speed
+
+string parameter_tracking_level = parameter_manager.get_string( "Initial Tracking Level", "29" );
+
+if parameter_tracking_level == "29 (default)" then parameter_tracking_level = "29" else end;
+
+int baseline_tracking_speed = 5; # value indicates the number of pixels the disc moves per frame at the default difficulty level
+											# it WILL be affected by the refresh rate of the monitor
+int baseline_tracking_level;
+
+if is_int( parameter_tracking_level ) == true then
+	baseline_tracking_level = int(parameter_tracking_level)
+else
+	baseline_tracking_level = 29;
+end;
+
 int current_tracking_level = baseline_tracking_level;
 
 double speed_x = baseline_tracking_speed;
 double speed_y = baseline_tracking_speed;
+
+	# setup other tracking variables
 
 array <double> array_starting_coordinates [7][2] = { { -350.0, 350.0 }, { 350.0, 350.0 }, { -350.0, 0.0 }, { 350.0, 0.0 }, { -350.0, -350.0 }, { -0.0, -350.0 }, { 350.0, -350.0 } };
 array <double> array_starting_jitter [10] = { 0.0, 5.0, 10.0, 15.0, 20.0, 25.0, 30.0, 35.0, 40.0, 45.0 };
@@ -404,19 +422,35 @@ bool mouse_on_target_disc;
 
 # initialised shape task parameters and variables
 
-array <double> array_shape_threshold_intervals [0];
-array <int> array_shape_target_present [0];
-array <int> array_shape_pointers [12] = { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12 };
-
 array <double> array_shape_staircase_percentages [49] = { 222.22,216.67,211.11,205.56,200.00,194.44,188.89,183.33,177.78,172.22,166.67,
 161.11,155.56,150.00,144.44,138.89,133.33,127.78,122.22,120.00,117.78,115.56,113.33,111.11,108.89,106.67,104.44,102.22,100.00,97.78,
 95.56,93.33,91.11,88.89,86.67,84.44,82.22,80.00,77.78,75.56,73.33,71.11,68.89,66.67,64.44,62.22,60.00,57.78,55.56 };
+
 double shape_target_min_accuracy = 77.5;
 double shape_target_max_accuracy = 82.5;
-string shape_speed_description;
+
+	# setup initial shape speed
+
 int baseline_shape_duration = 450;
-int baseline_shape_level = 29;
+int baseline_shape_level;
+
+string parameter_shape_level = parameter_manager.get_string( "Initial Shape Level", "29" );
+if parameter_shape_level == "29 (default)" then parameter_shape_level = "29" else end;
+
+if is_int( parameter_shape_level ) == true then
+	baseline_shape_level = int(parameter_shape_level)
+else
+	baseline_shape_level = 29;
+end;
+
 int current_shape_level = baseline_shape_level;
+
+	# other shape paramaeters and variables
+
+array <int> array_shape_pointers [12] = { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12 };
+array <double> array_shape_threshold_intervals [0];
+array <int> array_shape_target_present [0];
+string shape_speed_description;
 int final_shape_level;
 double shape_mini_trials;
 double shape_trial_accuracy;
@@ -453,7 +487,6 @@ until
 begin
 	
 	trial_count_max = array_section_trials[section].count();
-	term.print_line( array_section_trials[section].count() );
 
 	#########################################################################################
 	#########################################################################################

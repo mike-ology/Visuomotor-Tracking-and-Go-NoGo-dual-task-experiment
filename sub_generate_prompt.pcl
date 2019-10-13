@@ -1,4 +1,6 @@
-# version 1.1.0
+# version 1.1.1
+	# CHANGES
+	# - Main text for message now centred in empty space now occupied by the keyboard prompts (instead of being centred on the screen)
 
 # Get dimensions of current screen and compare to requested dimensions
 

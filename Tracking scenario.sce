@@ -200,6 +200,19 @@ bool draw_other_discs = false;
 double req_screen_x = 1920.0;
 double req_screen_y = 1080.0;
 
+# User parameters for logfile generation
+# If filename already exists, a new file is created with an appended number
+# Logfile may be optionally created on local disk (when running from network location)
+string local_path = "C:/Presentation Output/Tracking + Shape Dual Task 2019/";
+string filename_prefix = "Tracking Dual - Participant ";
+string use_local_save = parameter_manager.get_string( "Use Local Save", "NO" );
+
+#######################
+
+# Load PCL code and subroutines from other files
+include "sub_logfile_saving.pcl";
+create_logfile();
+
 # initialised mouse parameters and variables
 
 mouse mse = response_manager.get_mouse( 1 );
@@ -212,24 +225,39 @@ mse.set_pos( 2, 0 );
 
 # initialise general trial parameters and variables
 
-int phase = 2;
-string training_type = "dual";
+int phase = 3;
+string training_type = "single";
 int section;
 int max_sections;
 array <int> array_section_trials [2][0];
-array <int> array_trials_per_task [0];
-array <int> array_tracking_trial_length [0];
-array <int> array_shape_trial_length [0];
-array <int> array_dual_trial_length [0];
+array <int> array_trials_per_task [2];
+array <int> array_tracking_trial_length [2];
+array <int> array_shape_trial_length [2];
+array <int> array_dual_trial_length [2];
+
+int threshold_trial_count = 18;
+int threshold_tracking_trial_duration = 60;
+int threshold_shape_trial_duration = 120;
+
+int test_trial_count = 15;
+int test_trial_duration = 180;
+
+int training_trial_count = 12;
+int training_trial_duration = 180;
 
 if phase == 1 then
 
 	max_sections = 2;
-	array_trials_per_task.assign( { 9, 5 } );
-	array_tracking_trial_length.assign( { 60, 180 } );
-	array_shape_trial_length.assign( { 120, 180 } );
-	array_dual_trial_length.assign( { 0, 180 } );
+	array_trials_per_task[1] = threshold_trial_count/2; #9 - section 1 - threshold
+	array_tracking_trial_length[1] = threshold_tracking_trial_duration; #60
+	array_shape_trial_length[1] = threshold_shape_trial_duration; #120
+	array_dual_trial_length[1] = 0; #0
 
+	array_trials_per_task[2] = test_trial_count/3; #5 - section 2 - test
+	array_tracking_trial_length[2] = test_trial_duration; #180
+	array_shape_trial_length[2] = test_trial_duration; #180
+	array_dual_trial_length[2] = test_trial_duration; #180
+	
 	loop
 		int i = 1
 	until
@@ -254,10 +282,11 @@ if phase == 1 then
 elseif phase == 2 && training_type == "single" then
 
 	max_sections = 1;
-	array_trials_per_task.assign( { 6 } );
-	array_tracking_trial_length.assign( { 180 } );
-	array_shape_trial_length.assign( { 180 } );
-	array_dual_trial_length.assign( { 0 } );
+	array_trials_per_task[1] = training_trial_count/2; 
+	array_tracking_trial_length[1] = training_trial_duration;
+	array_shape_trial_length[1] = training_trial_duration;
+	array_dual_trial_length[1] = 0;
+	
 
 	loop
 		int i = 1
@@ -272,10 +301,10 @@ elseif phase == 2 && training_type == "single" then
 elseif phase == 2 && training_type == "dual" then
 
 	max_sections = 1;
-	array_trials_per_task.assign( { 12 } );
-	array_tracking_trial_length.assign( { 0 } );
-	array_shape_trial_length.assign( { 0 } );
-	array_dual_trial_length.assign( { 180 } );
+	array_trials_per_task[1] = training_trial_count; 
+	array_tracking_trial_length[1] = 0;
+	array_shape_trial_length[1] = 0;
+	array_dual_trial_length[1] = training_trial_duration;
 
 	loop
 		int i = 1
@@ -289,10 +318,10 @@ elseif phase == 2 && training_type == "dual" then
 elseif phase == 3 then
 
 	max_sections = 1;
-	array_trials_per_task.assign( { 5 } );
-	array_tracking_trial_length.assign( { 180 } );
-	array_shape_trial_length.assign( { 180 } );
-	array_dual_trial_length.assign( { 180 } );
+	array_trials_per_task[1] = test_trial_count/3; 
+	array_tracking_trial_length[1] = test_trial_duration; 
+	array_shape_trial_length[1] = test_trial_duration; 
+	array_dual_trial_length[1] = test_trial_duration; 
 
 	loop
 		int i = 1
@@ -424,6 +453,7 @@ until
 begin
 	
 	trial_count_max = array_section_trials[section].count();
+	term.print_line( array_section_trials[section].count() );
 
 	#########################################################################################
 	#########################################################################################
@@ -438,7 +468,7 @@ begin
 			"In this part, you will alternate between completing two different tasks. One will require you to use the mouse to track a disc's movements on the screen, and the other will require you to respond to certain target shapes appearing (whilst ignoring others)\n\n" +
 			"Later, you will complete both tasks at the same time! For now, you will practice each one separately.\n\n" +
 			"The difficulty of each task will be adjusted from trial-to-trial based on your performance.\n\n" +
-			"<font color='255, 255, 0'>In this part, you will complete XX trials, XX of each type. Each disc trial will run for XX seconds, and each shape trial will run for XX seconds</font>\n\n" +
+			"<font color='255, 255, 0'>In this part, you will complete " + string(array_trials_per_task[1]*2) + " trials, " + string(array_trials_per_task[1]) + " of each type. Each disc trial will run for " + string(array_tracking_trial_length[1]) + " seconds, and each shape trial will run for " + string(array_shape_trial_length[1]) + " seconds.</font>\n\n" +
 			"On the next screen, you will receive more detail about the task you will complete on the first trial.", true );
 			
 			prompt_trial.present();
@@ -449,7 +479,7 @@ begin
 			"In this part, you will be tested to see how your performance compares on each task separately, as well as on both tasks simultaneously.\n\n" +
 			"For this new, dual task, condition try not to prioritise one task at the expense of the other. Performance on both tasks is equally important.\n\n" +
 			"The difficulty will no longer change and is set based on your performance in the previous section.\n\n" +
-			"<font color='255, 255, 0'>In this part, you will complete XX trials, XX of each type. Each trial will run for XX seconds</font>\n\n" +
+			"<font color='255, 255, 0'>In this part, you will complete " + string(array_trials_per_task[2]*3) + " trials, " + string(array_trials_per_task[2]) + " of each type. Each trial will run for " + string(test_trial_duration) + " seconds</font>\n\n" +
 			"On the next screen, you will be informed about the first task.", true );
 			
 			prompt_trial.present();
@@ -459,7 +489,7 @@ begin
 		prompt_message.set_caption( "<b>SINGLE TASK TRAINING</b>\n\n" +
 			"In this part, you will alternate between completing the disc and shape tasks. Specifically, you will complete these tasks separately - there is no dual task condition in this part.\n\n" +
 			"The difficulty will be based on your performance during the initial session.\n\n" +
-			"<font color='255, 255, 0'>In this part, you will complete XX trials, XX of each type. Each trial will run for XX seconds.</font>\n\n" +
+			"<font color='255, 255, 0'>In this part, you will complete " + string(array_trials_per_task[1]*2) + " trials, " + string(array_trials_per_task[1]) + " of each type. Each trial will run for " + string(training_trial_duration) + " seconds.</font>\n\n" +
 			"On the next screen, you will receive more detail about the task you will complete on the first trial.", true );
 			
 			prompt_trial.present();
@@ -469,7 +499,7 @@ begin
 		prompt_message.set_caption( "<b>DUAL TASK TRAINING</b>\n\n" +
 			"In this part, you will be completing the disc and shape tasks simultaneously. Specifically, every trial will be the dual task condition where you complete the disc tracking and shape tasks at the same time.\n\n" +
 			"The difficulty will be based on your performance during the initial session.\n\n" +
-			"<font color='255, 255, 0'>In this part, you will complete XX trials. Each trial will run for XX seconds.</font>\n\n" +
+			"<font color='255, 255, 0'>In this part, you will complete " + string(array_trials_per_task[1]) + " trials. Each trial will run for " + string(training_trial_duration) + " seconds.</font>\n\n" +
 			"On the next screen, you will receive more detail about the task you will complete on the first trial.", true );
 			
 			prompt_trial.present();
@@ -480,7 +510,7 @@ begin
 			"In this part, you will be tested to see how your performance compares on each task separately, as well as on both tasks simultaneously.\n\n" +
 			"For the dual task condition try not to prioritise one task at the expense of the other. Performance on both tasks is equally important.\n\n" +
 			"The difficulty will no longer change and is set based on your performance in the previous section.\n\n" +
-			"<font color='255, 255, 0'>In this part, you will complete XX trials, XX of each type. Each trial will run for XX seconds</font>\n\n" +
+			"<font color='255, 255, 0'>In this part, you will complete " + string(array_trials_per_task[1]*3) + " trials, " + string(array_trials_per_task[1]) + " of each type. Each trial will run for " + string(test_trial_duration) + " seconds</font>\n\n" +
 			"On the next screen, you will be informed about the first task.", true );
 			
 			prompt_trial.present();
@@ -1031,3 +1061,35 @@ begin
 	section = section + 1;
 	
 end;
+
+double time = round ( ( double ( clock.time()) )/60000.00, 2 );
+log.print ( "\nTime to completion... " );
+log.print ( string( time ) + " minutes" ); 
+
+log.print( "\n" );
+log.print( "\n" );
+log.print( "===== TASK COMPLETE =====" );
+log.close();
+
+#########################################################
+# Subroutine to copy logfile back to the default location
+# Requires the strings associated with:
+#	[1] the local file path
+#	[2] the file name
+#	[3] if save operation is to be performed ("YES"/"NO") 
+
+bool copy_success = sub_save_to_network( local_path, filename, use_local_save );	
+
+if copy_success == true then
+	prompt_message.set_caption( "End of experiment! Thank you!\n\nPlease notify the experimenter.\n\n<font color = '0,255,0'>LOGFILE WAS SAVED TO DEFAULT LOCATION</font>", true )
+elseif copy_success == false then
+	prompt_message.set_caption( "End of experiment! Thank you!\n\nPlease notify the experimenter.\n\n<font color = '255,0,0'>LOGFILE WAS SAVED TO:\n</font>" + local_path, true );
+else
+end;
+
+#########################################################
+create_new_prompt( 1 );
+
+mid_button_text.set_caption( "CLOSE PROGRAM [" + response_manager.button_name( 1, false, true ) + "]", true );
+
+prompt_trial.present();

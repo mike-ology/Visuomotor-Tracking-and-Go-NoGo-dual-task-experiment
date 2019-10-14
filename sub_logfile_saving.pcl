@@ -29,7 +29,7 @@ begin
 		if use_local_save == "YES" then
 			create_directory( local_path );
 
-			if file_exists( local_path + filename ) then
+			if file_exists( local_path + filename ) || file_exists( logfile_directory + filename ) then
 				# show warning
 					create_new_prompt( 2 );
 					prompt_message.set_caption( "WARNING: A logfile already exists for this combination of participant number and phase number.\n\nBy continuing, new data will be appended to the bottom of the existing file.", true );
@@ -105,6 +105,21 @@ begin
 		end;
 
 		output_file final_output = new output_file();
+		
+		loop
+			bool safe_filename_obtained = false;
+			int i = 1;
+		until
+			safe_filename_obtained == true
+		begin
+			if file_exists( name ) then
+				name = name + "_" + string(i);
+			else
+				safe_filename_obtained = true;
+			end;
+			i = i + 1;
+		end;
+			
 		final_output.open_append( name );
 
 		loop

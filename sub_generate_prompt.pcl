@@ -95,7 +95,7 @@ begin
 		prompt_pic.set_part_on_top( 4, true );
 		prompt_pic.set_part_on_top( 5, true );
 
-		prompt_trial.set_terminator_buttons (  { 2, 3 } );
+		prompt_trial.set_terminator_buttons (  { 1 } );
 
 	elseif variant == 1 then
 		prompt_pic.add_part( left_box, ( -req_screen_x / 2.0 ) * ( 2.0 / 3.0 ) * prompt_scale_factor, ( -req_screen_y / 2.0 ) * ( 4.0 / 5.0 ) * prompt_scale_factor ) ;

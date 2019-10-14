@@ -194,25 +194,15 @@ trial {
 
 begin_pcl;
 
+# Create/open file that stores previous threshold data
+
+
 bool debug_mode = parameter_manager.get_bool( "Debug Mode", false );
 bool draw_other_discs = false;
 
 double req_screen_x = 1920.0;
 double req_screen_y = 1080.0;
 double refresh_rate = ( 1000.0 / display_device.refresh_period() );
-
-# User parameters for logfile generation
-# If filename already exists, a new file is created with an appended number
-# Logfile may be optionally created on local disk (when running from network location)
-string local_path = "C:/Presentation Output/Tracking + Shape Dual Task 2019/";
-string filename_prefix = "Tracking Dual - Participant ";
-string use_local_save = parameter_manager.get_string( "Use Local Save", "NO" );
-
-#######################
-
-# Load PCL code and subroutines from other files
-include "sub_logfile_saving.pcl";
-create_logfile();
 
 # initialised mouse parameters and variables
 
@@ -460,12 +450,9 @@ double shape_time_limit;
 
 # # # #
 
-################
-
 include "sub_generate_prompt.pcl";
 include "sub_collision_check.pcl";
 include "sub_disc_task_pcl_part.pcl";
-
 sub shape_feedback ( int correct )
 begin
 	if phase == 1 && section == 1 then
@@ -476,6 +463,41 @@ begin
 		end;
 	end;
 end;
+
+################
+
+# User parameters for logfile generation
+# If filename already exists, a new file is created with an appended number
+# Logfile may be optionally created on local disk (when running from network location)
+string local_path = "C:/Presentation Output/Tracking + Shape Dual Task 2019/";
+string filename_prefix = "Tracking Dual - Participant ";
+string use_local_save = parameter_manager.get_string( "Use Local Save", "NO" );
+
+#######################
+
+# Load PCL code and subroutines from other files
+include "sub_logfile_saving.pcl";
+create_logfile();
+
+# Logfile Header	
+log.print("Dual Tracking Task\n");
+log.print("Participant ");
+log.print( participant );
+log.print("\n");
+log.print( date_time() );
+log.print("\n\n");
+
+log.print( "Phase" ); log.print( "\t" );
+log.print( "Section" ); log.print( "\t" );
+log.print( "Trial" ); log.print( "\t" );
+log.print( "Type" ); log.print( "\t" );
+log.print( "D.Diff" ); log.print( "\t" );
+log.print( "D.Acc" ); log.print( "\t" );
+log.print( "S.Diff" ); log.print( "\t" );
+log.print( "S.Acc" ); log.print( "\t" );
+log.print( "S.Hits" ); log.print( "\t" );
+log.print( "S.CRej" ); log.print( "\t" );
+log.print( "S.MRT" ); log.print( "\n" );
 
 ################
 
@@ -974,6 +996,53 @@ begin
 
 		#########################################################################################
 		#########################################################################################
+		# LOG DATA		
+
+		int median_shape_RT = int(round(median_value( array_shape_trial_all_RTs ), 0 ));
+		shape_trial_accuracy = arithmetic_mean( array_shape_trial_accuracy ) * 100.0;
+		shape_trial_targets_hit = arithmetic_mean( array_shape_trial_accuracy ) * 100.0;
+		shape_trial_correct_rej = arithmetic_mean( array_shape_trial_accuracy ) * 100.0;
+
+		if array_section_trials[section][trial_count] == 1 then
+			log.print( phase ); log.print( "\t" );
+			log.print( section ); log.print( "\t" );
+			log.print( trial_count ); log.print( "\t" );
+			log.print( array_section_trials[section][trial_count] ); log.print( "\t" );
+			log.print( current_tracking_level ); log.print( "\t" );
+			log.print( tracking_accuracy ); log.print( "\t" );
+			log.print( "-" ); log.print( "\t" );
+			log.print( "-" ); log.print( "\t" );
+			log.print( "-" ); log.print( "\t" );
+			log.print( "-" ); log.print( "\t" );
+			log.print( "-" ); log.print( "\n" );
+		elseif array_section_trials[section][trial_count] == 2 then
+			log.print( phase ); log.print( "\t" );
+			log.print( section ); log.print( "\t" );
+			log.print( trial_count ); log.print( "\t" );
+			log.print( array_section_trials[section][trial_count] ); log.print( "\t" );
+			log.print( "-" ); log.print( "\t" );
+			log.print( "-" ); log.print( "\t" );
+			log.print( current_shape_level ); log.print( "\t" );
+			log.print( shape_trial_accuracy ); log.print( "\t" );
+			log.print( shape_trial_targets_hit ); log.print( "\t" );
+			log.print( shape_trial_correct_rej ); log.print( "\t" );
+			log.print( median_shape_RT ); log.print( "\n" );
+		elseif array_section_trials[section][trial_count] == 3 then
+			log.print( phase ); log.print( "\t" );
+			log.print( section ); log.print( "\t" );
+			log.print( trial_count ); log.print( "\t" );
+			log.print( array_section_trials[section][trial_count] ); log.print( "\t" );
+			log.print( current_tracking_level ); log.print( "\t" );
+			log.print( tracking_accuracy ); log.print( "\t" );
+			log.print( current_shape_level ); log.print( "\t" );
+			log.print( shape_trial_accuracy ); log.print( "\t" );
+			log.print( shape_trial_targets_hit ); log.print( "\t" );
+			log.print( shape_trial_correct_rej ); log.print( "\t" );
+			log.print( median_shape_RT ); log.print( "\n" );
+		end;
+
+		#########################################################################################
+		#########################################################################################
 		# ADJUST DIFFICULTY ON THRESHOLD TRIALS		
 		
 		bool show_reset_message = false;
@@ -1017,9 +1086,6 @@ begin
 			elseif array_section_trials[section][trial_count] == 2 then
 
 				int shape_level_change = 0;
-				shape_trial_accuracy = arithmetic_mean( array_shape_trial_accuracy ) * 100.0;
-				shape_trial_targets_hit = arithmetic_mean( array_shape_trial_accuracy ) * 100.0;
-				shape_trial_correct_rej = arithmetic_mean( array_shape_trial_accuracy ) * 100.0;
 				
 				if shape_trial_accuracy < shape_target_min_accuracy then
 					# accuracy too low
@@ -1051,12 +1117,26 @@ begin
 			end;
 		
 		end; # ENDIF
+		
+		### Log additional data if thresholding is complete
+		if phase == 1 && section == 1 && trial_count == trial_count_max then
+			log.print( "-" ); log.print( "\t" );
+			log.print( "-" ); log.print( "\t" );
+			log.print( "-" ); log.print( "\t" );
+			log.print( "-" ); log.print( "\t" );
+			log.print( current_tracking_level ); log.print( "\t" );
+			log.print( "-" ); log.print( "\t" );
+			log.print( current_shape_level ); log.print( "\t" );
+			log.print( "-" ); log.print( "\t" );
+			log.print( "-" ); log.print( "\t" );
+			log.print( "-" ); log.print( "\t" );
+			log.print( "-" ); log.print( "\n" );
+		end;
+
 	
 		#########################################################################################
 		#########################################################################################
 		# PRESENT END OF TRIAL SUMMARY
-		
-		int median_shape_RT = int(round(median_value( array_shape_trial_all_RTs ), 0 ));
 		
 		if show_reset_message == true then
 			prompt_message.set_caption( "Trial was terminated early.\n\nTrial difficulty will not be adjusted and the trial counter will not increment.\n\nA trial of the same type as before will now begin.", true );

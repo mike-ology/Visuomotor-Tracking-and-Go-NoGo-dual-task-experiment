@@ -24,12 +24,20 @@ begin
 		log_success == true
 	begin
 
-		filename = filename_prefix + participant + "_" + string( logfile_inc ) + ".txt";
+		filename = filename_prefix + participant + " phase " + string(phase) + ".txt";
 
 		if use_local_save == "YES" then
 			create_directory( local_path );
+
 			if file_exists( local_path + filename ) then
-				# do nothing
+				# show warning
+					create_new_prompt( 2 );
+					prompt_message.set_caption( "WARNING: A logfile already exists for this combination of participant number and phase number.\n\nBy continuing, new data will be appended to the bottom of the existing file.", true );
+					left_button_text.set_caption( "ESCAPE\nClose program", true );
+					right_button_text.set_caption( "SPACE\nAppend logfile", true );
+					prompt_trial.present();
+					log.open_append( local_path + filename );
+					break
 			else
 				log.open( local_path + filename );
 				break
@@ -37,15 +45,20 @@ begin
 
 		else
 			if file_exists( logfile_directory + filename ) then
-				# do nothing
+				# show warning
+					create_new_prompt( 2 );
+					prompt_message.set_caption( "WARNING: A logfile already exists for this combination of participant number and phase number.\n\nBy continuing, new data will be appended to the bottom of the existing file.", true );
+					left_button_text.set_caption( "ESCAPE\nClose program", true );
+					right_button_text.set_caption( "SPACE\nAppend logfile", true );
+					prompt_trial.present();
+					log.open_append( logfile_directory + filename );
+					break
 			else
 				log.open( filename );
 				break
 			end;
 		end;
 		
-		logfile_inc = logfile_inc + 1;
-
 	end;
 
 end;

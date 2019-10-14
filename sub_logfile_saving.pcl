@@ -29,10 +29,28 @@ begin
 		if use_local_save == "YES" then
 			create_directory( local_path );
 
-			if file_exists( local_path + filename ) || file_exists( logfile_directory + filename ) then
+			if file_exists( local_path + filename ) && !file_exists( logfile_directory + filename ) then
 				# show warning
 					create_new_prompt( 2 );
-					prompt_message.set_caption( "WARNING: A logfile already exists for this combination of participant number and phase number.\n\nBy continuing, new data will be appended to the bottom of the existing file.", true );
+					prompt_message.set_caption( "WARNING: A logfile already exists in " + local_path + " for this combination of participant number and phase number.\n\nBy continuing, this file will be overwritten. At the end of the experiment, a copy of this file will be transferred to the default logfile location.", true );
+					left_button_text.set_caption( "ESCAPE\nClose program", true );
+					right_button_text.set_caption( "SPACE\nAppend logfile", true );
+					prompt_trial.present();
+					log.open( local_path + filename );
+					break
+			elseif !file_exists( local_path + filename ) && file_exists( logfile_directory + filename ) then
+				# show warning
+					create_new_prompt( 2 );
+					prompt_message.set_caption( "WARNING: A logfile already exists in the default logfile location for this combination of participant number and phase number.\n\nBy continuing, a separate file will be created with a number appended.", true );
+					left_button_text.set_caption( "ESCAPE\nClose program", true );
+					right_button_text.set_caption( "SPACE\nAppend logfile", true );
+					prompt_trial.present();
+					log.open_append( local_path + filename );
+					break
+			elseif file_exists( local_path + filename ) && file_exists( logfile_directory + filename ) then
+				# show warning
+					create_new_prompt( 2 );
+					prompt_message.set_caption( "WARNING: Logfiles for this combination of participant number and phase number already exist in " + local_path + " and the default logfile location.\n\nBy continuing, the file in " + local_path + " will be overwritten, but a separate file will be created in the default logfile location with a number appended.", true );
 					left_button_text.set_caption( "ESCAPE\nClose program", true );
 					right_button_text.set_caption( "SPACE\nAppend logfile", true );
 					prompt_trial.present();

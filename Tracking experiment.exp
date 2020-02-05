@@ -20,20 +20,20 @@
 </con>
 <dbi></dbi>
 <dbs>button</dbs>
-<ddi>1</ddi>
+<ddi>0</ddi>
 <dds>
 <icm_profile></icm_profile>
 <orient>0</orient>
 <use_icm>0</use_icm>
 </dds>
-<ddv>Intel(R) UHD Graphics 620</ddv>
+<ddv>Primary Display Driver</ddv>
 <depchg>1</depchg>
 <discard_windows_messages>0</discard_windows_messages>
 <display_status_window>1</display_status_window>
 <dmd>32</dmd>
 <dmh>1080</dmh>
 <dmr>60</dmr>
-<dmrf>60.020425119435</dmrf>
+<dmrf>60</dmrf>
 <dmw>1920</dmw>
 <docs>
 <args></args>
@@ -52,7 +52,7 @@
 <filename>C:\Users\Michael\OneDrive\University\A. Current Projects\Trajectory Task\sub_logfile_saving.pcl</filename>
 </efs>
 <exclusive_mouse>1</exclusive_mouse>
-<exp_version>0.2.0</exp_version>
+<exp_version>0.2.1</exp_version>
 <exparam>
 <man>
 <cfg>
@@ -75,7 +75,7 @@
 </val>
 <val>
 <dat>
-<val>NO</val>
+<val>YES</val>
 </dat>
 <id>1</id>
 </val>
@@ -170,7 +170,7 @@
 </pl>
 </grp>
 <grp>
-<gn>Phase 1 - Threshold Parameters</gn>
+<gn>Threshold Parameters (Phase 1)</gn>
 <pl>
 <pid>2</pid>
 <pid>3</pid>
@@ -178,7 +178,7 @@
 </pl>
 </grp>
 <grp>
-<gn>Phase 2 - Training Parameters</gn>
+<gn>Training Parameters (Phase 2)</gn>
 <pl>
 <pid>5</pid>
 <pid>6</pid>
@@ -186,7 +186,7 @@
 </pl>
 </grp>
 <grp>
-<gn>Phase 1 &amp; 3 - Testing Parameters</gn>
+<gn>Testing Parameters (Phase 1 &amp; 3)</gn>
 <pl>
 <pid>8</pid>
 <pid>9</pid>
@@ -548,6 +548,26 @@ Calculations occur to ensure that the actual speed is identical across monitors 
 <name>Keyboard</name>
 </device>
 <device>
+<device_type>3</device_type>
+<dx_device_type>0</dx_device_type>
+<name>HID Keyboard Device</name>
+</device>
+<device>
+<device_type>3</device_type>
+<dx_device_type>0</dx_device_type>
+<name>HID Keyboard Device 1</name>
+</device>
+<device>
+<device_type>3</device_type>
+<dx_device_type>0</dx_device_type>
+<name>HID Keyboard Device 2</name>
+</device>
+<device>
+<device_type>3</device_type>
+<dx_device_type>0</dx_device_type>
+<name>HID Keyboard Device 3</name>
+</device>
+<device>
 <abs_axis>
 <dead_zone>0</dead_zone>
 <max>1000</max>
@@ -590,16 +610,6 @@ Calculations occur to ensure that the actual speed is identical across monitors 
 <name>HID-compliant mouse</name>
 </device>
 <device>
-<device_type>3</device_type>
-<dx_device_type>0</dx_device_type>
-<name>HID Keyboard Device</name>
-</device>
-<device>
-<device_type>3</device_type>
-<dx_device_type>0</dx_device_type>
-<name>Standard 101/102-Key or Microsoft Natural PS/2 Keyboard for HP Hotkey Support</name>
-</device>
-<device>
 <abs_axis>
 <dead_zone>0</dead_zone>
 <max>1000</max>
@@ -639,54 +649,27 @@ Calculations occur to ensure that the actual speed is identical across monitors 
 <dx_device_type>0</dx_device_type>
 <max_raw_pos>65535</max_raw_pos>
 <min_raw_pos>0</min_raw_pos>
-<name>Synaptics HID ClickPad</name>
-</device>
-<device>
-<abs_axis>
-<dead_zone>0</dead_zone>
-<max>1000</max>
-<min>-1000</min>
-<name>X-axis</name>
-<saturation>1</saturation>
-</abs_axis>
-<abs_axis>
-<dead_zone>0</dead_zone>
-<max>1000</max>
-<min>-1000</min>
-<name>Y-axis</name>
-<saturation>1</saturation>
-</abs_axis>
-<axis>
-<max>1000</max>
-<min>-1000</min>
-<name>X-axis</name>
-<restricted>1</restricted>
-<scale>1</scale>
-</axis>
-<axis>
-<max>1000</max>
-<min>-1000</min>
-<name>Y-axis</name>
-<restricted>1</restricted>
-<scale>1</scale>
-</axis>
-<axis>
-<max>1000</max>
-<min>-1000</min>
-<name>Wheel</name>
-<restricted>1</restricted>
-<scale>1</scale>
-</axis>
-<device_type>2</device_type>
-<dx_device_type>0</dx_device_type>
-<max_raw_pos>65535</max_raw_pos>
-<min_raw_pos>0</min_raw_pos>
-<name>PS/2 Compatible Mouse</name>
+<name>HID-compliant mouse 1</name>
 </device>
 <device>
 <device_type>4</device_type>
 <dx_device_type>17</dx_device_type>
-<name>HP Wireless Button Driver</name>
+<name>Surface Hid Mini Driver</name>
+</device>
+<device>
+<device_type>4</device_type>
+<dx_device_type>17</dx_device_type>
+<name>Surface Hid Mini Driver 1</name>
+</device>
+<device>
+<device_type>4</device_type>
+<dx_device_type>17</dx_device_type>
+<name>Precise Touch</name>
+</device>
+<device>
+<device_type>4</device_type>
+<dx_device_type>17</dx_device_type>
+<name>Converted Portable Device Control device</name>
 </device>
 <device>
 <device_type>4</device_type>
@@ -696,7 +679,27 @@ Calculations occur to ensure that the actual speed is identical across monitors 
 <device>
 <device_type>4</device_type>
 <dx_device_type>17</dx_device_type>
+<name>Converted Portable Device Control device 1</name>
+</device>
+<device>
+<device_type>4</device_type>
+<dx_device_type>17</dx_device_type>
 <name>Micr 1</name>
+</device>
+<device>
+<device_type>4</device_type>
+<dx_device_type>17</dx_device_type>
+<name>Virtual HID Framework (VHF) HID device</name>
+</device>
+<device>
+<device_type>4</device_type>
+<dx_device_type>17</dx_device_type>
+<name>Virtual HID Framework (VHF) HID device 1</name>
+</device>
+<device>
+<device_type>4</device_type>
+<dx_device_type>17</dx_device_type>
+<name>Virtual HID Framework (VHF) HID device 2</name>
 </device>
 <device>
 <axis>

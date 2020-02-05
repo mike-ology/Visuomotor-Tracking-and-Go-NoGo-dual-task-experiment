@@ -1,0 +1,3 @@
+v0.2.1 5/2/20
+- Hit and Correct Rejection now calculated and reported correctly (instead of just using overall accuracy values)
+- Accuracy in logfile rounded to 4 decimal places to improve readibility

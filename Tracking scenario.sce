@@ -1000,8 +1000,8 @@ begin
 
 		int median_shape_RT = int(round(median_value( array_shape_trial_all_RTs ), 0 ));
 		shape_trial_accuracy = arithmetic_mean( array_shape_trial_accuracy ) * 100.0;
-		shape_trial_targets_hit = arithmetic_mean( array_shape_trial_accuracy ) * 100.0;
-		shape_trial_correct_rej = arithmetic_mean( array_shape_trial_accuracy ) * 100.0;
+		shape_trial_targets_hit = arithmetic_mean( array_shape_trial_accuracy_t_present ) * 100.0;
+		shape_trial_correct_rej = arithmetic_mean( array_shape_trial_accuracy_t_absent ) * 100.0;
 
 		if array_section_trials[section][trial_count] == 1 then
 			log.print( phase ); log.print( "\t" );
@@ -1009,7 +1009,7 @@ begin
 			log.print( trial_count ); log.print( "\t" );
 			log.print( array_section_trials[section][trial_count] ); log.print( "\t" );
 			log.print( current_tracking_level ); log.print( "\t" );
-			log.print( tracking_accuracy ); log.print( "\t" );
+			log.print( round(tracking_accuracy,4) ); log.print( "\t" );
 			log.print( "-" ); log.print( "\t" );
 			log.print( "-" ); log.print( "\t" );
 			log.print( "-" ); log.print( "\t" );
@@ -1023,9 +1023,9 @@ begin
 			log.print( "-" ); log.print( "\t" );
 			log.print( "-" ); log.print( "\t" );
 			log.print( current_shape_level ); log.print( "\t" );
-			log.print( shape_trial_accuracy ); log.print( "\t" );
-			log.print( shape_trial_targets_hit ); log.print( "\t" );
-			log.print( shape_trial_correct_rej ); log.print( "\t" );
+			log.print( round(shape_trial_accuracy,4) ); log.print( "\t" );
+			log.print( round(shape_trial_targets_hit,4) ); log.print( "\t" );
+			log.print( round(shape_trial_correct_rej,4) ); log.print( "\t" );
 			log.print( median_shape_RT ); log.print( "\n" );
 		elseif array_section_trials[section][trial_count] == 3 then
 			log.print( phase ); log.print( "\t" );
@@ -1035,9 +1035,9 @@ begin
 			log.print( current_tracking_level ); log.print( "\t" );
 			log.print( tracking_accuracy ); log.print( "\t" );
 			log.print( current_shape_level ); log.print( "\t" );
-			log.print( shape_trial_accuracy ); log.print( "\t" );
-			log.print( shape_trial_targets_hit ); log.print( "\t" );
-			log.print( shape_trial_correct_rej ); log.print( "\t" );
+			log.print( round(shape_trial_accuracy,4) ); log.print( "\t" );
+			log.print( round(shape_trial_targets_hit,4) ); log.print( "\t" );
+			log.print( round(shape_trial_correct_rej,4) ); log.print( "\t" );
 			log.print( median_shape_RT ); log.print( "\n" );
 		end;
 
@@ -1120,12 +1120,12 @@ begin
 		
 		### Log additional data if thresholding is complete
 		if phase == 1 && section == 1 && trial_count == trial_count_max then
+			log.print( "FINAL" ); log.print( "\t" );
+			log.print( "LEVELS" ); log.print( "\t" );
 			log.print( "-" ); log.print( "\t" );
-			log.print( "-" ); log.print( "\t" );
-			log.print( "-" ); log.print( "\t" );
-			log.print( "-" ); log.print( "\t" );
+			log.print( "DISC:" ); log.print( "\t" );
 			log.print( current_tracking_level ); log.print( "\t" );
-			log.print( "-" ); log.print( "\t" );
+			log.print( "SHAPE:" ); log.print( "\t" );
 			log.print( current_shape_level ); log.print( "\t" );
 			log.print( "-" ); log.print( "\t" );
 			log.print( "-" ); log.print( "\t" );

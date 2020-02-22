@@ -4,7 +4,7 @@
 
 <p align="center"> <img src="https://github.com/mike-ology/Dual-visual-tracking-and-shape-discrimination-task/blob/master/Stimuli/example.gif"> </p>
 
-**This experiment was programmed in Presentation (version 21.1). A licensed version of Presentation is required to use the program**
+**This experiment was programmed in Presentation (version 21.1). A licensed version of Presentation is required to use the program.**
  
 The experiment is intended to measure a participants ability to complete two different tasks, separately and together (the dual task condition). The first task requires participants to use the mouse to track a disc that bounces around the screen while the second task requires participants to quickly respond to target shapes presented in the centre of the screen and ignore distractors.
 
@@ -38,7 +38,7 @@ Typically, it would be run between Phase 1 and 3, with the two test sessions asc
 
 The number of trials run and length of each trial can be adjusted in the parameter box prior to running the experiment within certain limitations to ensure that the program can counterbalance trial-type parameters as necessary. The difficulty can also be adjusted, and is necessary to do so if commencing the study from any other section besides Phase 1.
 
-## Logfile save behaviour
+### Logfile save behaviour
 
 A parameter labelled "Use Local Save" can change the initial save location of logfiles. This task writes logfile data on a trial-by-trial basis so that any unexpected termination will allow the partially collected data to be accessible. Whilst the task can be run from a network location, this occasionally introduces read/write errors that Presentation cannot handle and will terminate the task unexpectedly. 
 

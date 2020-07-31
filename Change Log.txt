@@ -1,3 +1,6 @@
+v0.2.2 31/7/20
+- Central box in which the NoGo shapes are presented is now grey (instead of white). This allows the grey edges of the shapes to blend into the background so that each shape is not presented against a grey square.
+
 v0.2.1 5/2/20
 - Hit and Correct Rejection now calculated and reported correctly (instead of just using overall accuracy values)
 - Accuracy in logfile rounded to 4 decimal places to improve readibility

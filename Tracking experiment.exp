@@ -1,5 +1,5 @@
 <ver>21.1</ver>
-<efn>D:\Personal\OneDrive\University\A. Current Projects\Tracking and NoGo Task\Dual-visual-tracking-and-shape-discrimination-task\Tracking experiment.exp</efn>
+<efn>C:\Users\Michael\OneDrive\University\A. Current Projects\Cognitive Tasks in Presentation\Tracking and NoGo Task\Dual-visual-tracking-and-shape-discrimination-task\Tracking experiment.exp</efn>
 <author>MCWE</author>
 <con>
 <pause>None</pause>
@@ -41,18 +41,18 @@
 <lfn></lfn>
 </docs>
 <dp_list></dp_list>
-<dsd>D:\Personal\OneDrive\University\A. Current Projects\Tracking and NoGo Task\Dual-visual-tracking-and-shape-discrimination-task\Stimuli</dsd>
+<dsd>C:\Users\Michael\OneDrive\University\A. Current Projects\Cognitive Tasks in Presentation\Tracking and NoGo Task\Dual-visual-tracking-and-shape-discrimination-task\Stimuli</dsd>
 <dwm>0</dwm>
 <dxv>8</dxv>
 <efs>
-<filename>D:\Personal\OneDrive\University\A. Current Projects\Tracking and NoGo Task\Dual-visual-tracking-and-shape-discrimination-task\Tracking scenario.sce</filename>
-<filename>D:\Personal\OneDrive\University\A. Current Projects\Tracking and NoGo Task\Dual-visual-tracking-and-shape-discrimination-task\sub_collision_check.pcl</filename>
-<filename>D:\Personal\OneDrive\University\A. Current Projects\Tracking and NoGo Task\Dual-visual-tracking-and-shape-discrimination-task\sub_disc_task_pcl_part.pcl</filename>
-<filename>D:\Personal\OneDrive\University\A. Current Projects\Tracking and NoGo Task\Dual-visual-tracking-and-shape-discrimination-task\sub_generate_prompt.pcl</filename>
-<filename>D:\Personal\OneDrive\University\A. Current Projects\Tracking and NoGo Task\Dual-visual-tracking-and-shape-discrimination-task\sub_logfile_saving.pcl</filename>
+<filename>C:\Users\Michael\OneDrive\University\A. Current Projects\Cognitive Tasks in Presentation\Tracking and NoGo Task\Dual-visual-tracking-and-shape-discrimination-task\Tracking scenario.sce</filename>
+<filename>C:\Users\Michael\OneDrive\University\A. Current Projects\Cognitive Tasks in Presentation\Tracking and NoGo Task\Dual-visual-tracking-and-shape-discrimination-task\sub_collision_check.pcl</filename>
+<filename>C:\Users\Michael\OneDrive\University\A. Current Projects\Cognitive Tasks in Presentation\Tracking and NoGo Task\Dual-visual-tracking-and-shape-discrimination-task\sub_disc_task_pcl_part.pcl</filename>
+<filename>C:\Users\Michael\OneDrive\University\A. Current Projects\Cognitive Tasks in Presentation\Tracking and NoGo Task\Dual-visual-tracking-and-shape-discrimination-task\sub_generate_prompt.pcl</filename>
+<filename>C:\Users\Michael\OneDrive\University\A. Current Projects\Cognitive Tasks in Presentation\Tracking and NoGo Task\Dual-visual-tracking-and-shape-discrimination-task\sub_logfile_saving.pcl</filename>
 </efs>
 <exclusive_mouse>1</exclusive_mouse>
-<exp_version>0.2.1</exp_version>
+<exp_version>0.2.2</exp_version>
 <exparam>
 <man>
 <cfg>
@@ -466,7 +466,7 @@ Calculations occur to ensure that the actual speed is identical across monitors 
 <idt>0</idt>
 <ilc>0</ilc>
 <ip_chans></ip_chans>
-<lfd>D:\Personal\OneDrive\University\A. Current Projects\Tracking and NoGo Task\Dual-visual-tracking-and-shape-discrimination-task\Tracking Logfiles</lfd>
+<lfd>C:\Users\Michael\OneDrive\University\A. Current Projects\Cognitive Tasks in Presentation\Tracking and NoGo Task\Dual-visual-tracking-and-shape-discrimination-task\Tracking Logfiles</lfd>
 <lnb>2</lnb>
 <lno>4</lno>
 <log>
@@ -550,11 +550,6 @@ Calculations occur to ensure that the actual speed is identical across monitors 
 <name>Keyboard</name>
 </device>
 <device>
-<device_type>3</device_type>
-<dx_device_type>0</dx_device_type>
-<name>HID Keyboard Device</name>
-</device>
-<device>
 <abs_axis>
 <dead_zone>0</dead_zone>
 <max>1000</max>
@@ -597,14 +592,121 @@ Calculations occur to ensure that the actual speed is identical across monitors 
 <name>HID-compliant mouse</name>
 </device>
 <device>
-<device_type>4</device_type>
-<dx_device_type>17</dx_device_type>
-<name>Dell KB216 Wired Keyboard</name>
+<device_type>3</device_type>
+<dx_device_type>0</dx_device_type>
+<name>HID Keyboard Device</name>
+</device>
+<device>
+<device_type>3</device_type>
+<dx_device_type>0</dx_device_type>
+<name>HID Keyboard Device 1</name>
+</device>
+<device>
+<device_type>3</device_type>
+<dx_device_type>0</dx_device_type>
+<name>Microsoft Input Configuration Device</name>
+</device>
+<device>
+<abs_axis>
+<dead_zone>0</dead_zone>
+<max>1000</max>
+<min>-1000</min>
+<name>X-axis</name>
+<saturation>1</saturation>
+</abs_axis>
+<abs_axis>
+<dead_zone>0</dead_zone>
+<max>1000</max>
+<min>-1000</min>
+<name>Y-axis</name>
+<saturation>1</saturation>
+</abs_axis>
+<axis>
+<max>1000</max>
+<min>-1000</min>
+<name>X-axis</name>
+<restricted>1</restricted>
+<scale>1</scale>
+</axis>
+<axis>
+<max>1000</max>
+<min>-1000</min>
+<name>Y-axis</name>
+<restricted>1</restricted>
+<scale>1</scale>
+</axis>
+<axis>
+<max>1000</max>
+<min>-1000</min>
+<name>Wheel</name>
+<restricted>1</restricted>
+<scale>1</scale>
+</axis>
+<device_type>2</device_type>
+<dx_device_type>0</dx_device_type>
+<max_raw_pos>65535</max_raw_pos>
+<min_raw_pos>0</min_raw_pos>
+<name>HID-compliant mouse 1</name>
+</device>
+<device>
+<device_type>3</device_type>
+<dx_device_type>0</dx_device_type>
+<name>HID Keyboard Device 2</name>
+</device>
+<device>
+<device_type>3</device_type>
+<dx_device_type>0</dx_device_type>
+<name>HID Keyboard Device 3</name>
 </device>
 <device>
 <device_type>4</device_type>
 <dx_device_type>17</dx_device_type>
-<name>Dell KB216 Wired Keyboard 1</name>
+<name>Surface Hid Mini Driver</name>
+</device>
+<device>
+<device_type>4</device_type>
+<dx_device_type>17</dx_device_type>
+<name>Surface Hid Mini Driver 1</name>
+</device>
+<device>
+<device_type>4</device_type>
+<dx_device_type>17</dx_device_type>
+<name>Micr</name>
+</device>
+<device>
+<device_type>4</device_type>
+<dx_device_type>17</dx_device_type>
+<name>Precise Touch</name>
+</device>
+<device>
+<device_type>4</device_type>
+<dx_device_type>17</dx_device_type>
+<name>Converted Portable Device Control device</name>
+</device>
+<device>
+<device_type>4</device_type>
+<dx_device_type>17</dx_device_type>
+<name>Converted Portable Device Control device 1</name>
+</device>
+<device>
+<device_type>4</device_type>
+<dx_device_type>17</dx_device_type>
+<name>Virtual HID Framework (VHF) HID device</name>
+</device>
+<device>
+<device_type>4</device_type>
+<dx_device_type>17</dx_device_type>
+<name>Virtual HID Framework (VHF) HID device 1</name>
+</device>
+<device>
+<device_type>4</device_type>
+<dx_device_type>17</dx_device_type>
+<name>Micr 1</name>
+</device>
+<device>
+<device_type>4</device_type>
+<dx_device_type>17</dx_device_type>
+<name>Virtual HID Framework (VHF) HID device 2</name>
 </device>
 <device>
 <axis>
@@ -975,7 +1077,7 @@ Calculations occur to ensure that the actual speed is identical across monitors 
 <name>Mouse</name>
 </mse>
 <overrides></overrides>
-<sfn>D:\Personal\OneDrive\University\A. Current Projects\Tracking and NoGo Task\Dual-visual-tracking-and-shape-discrimination-task\Tracking scenario.sce</sfn>
+<sfn>C:\Users\Michael\OneDrive\University\A. Current Projects\Cognitive Tasks in Presentation\Tracking and NoGo Task\Dual-visual-tracking-and-shape-discrimination-task\Tracking scenario.sce</sfn>
 </sce>
 <sct>
 <capture_device>

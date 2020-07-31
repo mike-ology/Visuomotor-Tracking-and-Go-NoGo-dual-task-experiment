@@ -131,7 +131,7 @@ trial {
 		box {
 			width = 200;
 			height = 200;
-			color = 255, 255, 255;
+			color = 128, 128, 128;
 			}shape_box;
 		x = 0; y = 0;
 
@@ -892,7 +892,7 @@ begin
 			
 			
 			if clock.time_double() >= time_shape_feedback_ends && time_shape_feedback_ends != 0 then
-				shape_box.set_color( 255, 255, 255 );
+				shape_box.set_color( 128, 128, 128 );
 				time_shape_feedback_ends = 0;
 			else
 			end;

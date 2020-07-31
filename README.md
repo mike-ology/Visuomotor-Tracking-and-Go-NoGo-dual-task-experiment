@@ -44,4 +44,4 @@ A parameter labelled "Use Local Save" can change the initial save location of lo
 
 If this parameter is set to TRUE, Presentation will write logfile data to a 'C:/Presentation Output/Tracking + Shape Dual Task 2019' folder during the scenario. Immediately, prior to the 'Experiment Complete' screen, Presentation will attempt to write a copy of the output to the main logfile where the experiment files are located. Presentation will notify the experimenter if this write operation fails, and should Presentation crash during this operation, an intact logfile will remain in C:/Presentation Output. 
 
-If this parameter is set to FALSE, Presentation will create a logfile in the local of the experiment files as usual, '.../Tracking + Shape Dual Task 2019/Logfiles', regardless of whether this location is on a network or not.
+If this parameter is set to FALSE, Presentation will create a logfile in the location of the experiment files as usual, '.../Tracking + Shape Dual Task 2019/Logfiles', regardless of whether this location is on a network or not.
